@@ -1,0 +1,16 @@
+# User-specfic files
+*.user
+*.suo
+
+# Build Result
+x64/
+x86/
+Debug/
+
+# vcpkg
+vcpkg_installed/
+
+# Visual Studio cache/options directory
+.vs/
+
+

@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include <iostream>
-#include <tinyxml2.h>
 #include <rapidjson/document.h>
 #include <rapidjson/prettywriter.h>
 #include "PresentTrait.h"
