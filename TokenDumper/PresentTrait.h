@@ -16,15 +16,22 @@ namespace tokenDumper {
 	public:
 		using InfoType = rapidjson::Document;
 	public:
-		JsonTrait();
+		JsonTrait() noexcept;
+
+		// This class is non-copyable
 		JsonTrait(const JsonTrait&) = delete;
 		JsonTrait& operator = (const JsonTrait&) = delete;
+
+		// This class is movable
+		JsonTrait(JsonTrait&& rhs) noexcept;
+		JsonTrait& operator=(JsonTrait&& rhs) noexcept;
+
 		void Start(const char * title );
 		InfoType End();
 		void OpenGroup(const char* name);
 		void CloseGroup();
 		void AddItem(const char* name, const char* value, bool bIsNumber, bool bIsAttr);
-		void AddOtherTrait(const char * name,  const InfoType& info);
+		void AddSubTrait(const char * name,  const InfoType& info);
 		// TODO: will implement operator <<
 		void Print(std::ostream& os);
 	private:
@@ -35,15 +42,22 @@ namespace tokenDumper {
 	public:
 		using InfoType = pugi::xml_document;
 	public:
-		XMLTrait();
+		XMLTrait() noexcept;
+		
+		// This class is non-copyable
 		XMLTrait(const XMLTrait&) = delete;
 		XMLTrait& operator = (const XMLTrait&) = delete;
+
+		// This class is movable
+		XMLTrait(XMLTrait&& rhs) noexcept;
+		XMLTrait& operator=(XMLTrait&& rhs) noexcept;
+
 		void Start(const char * title );
 		InfoType End();
 		void OpenGroup(const char* name);
 		void CloseGroup();
 		void AddItem(const char* name, const char* value, bool IsNumber, bool bIsAttr);
-		void AddOtherTrait(const char * name,  const InfoType& info);
+		void AddSubTrait(const char * name,  const InfoType& info);
 		void Print(std::ostream& os);
 	private:
 		InfoType			 m_obj;

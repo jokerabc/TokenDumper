@@ -1,0 +1,17 @@
+#include "TokenDumper.h"
+
+namespace tokenDumper {
+
+	std::string TokenInformationClassToString(TOKEN_INFORMATION_CLASS infoClass) {
+
+		switch (infoClass) {
+		case TokenIntegrityLevel:
+			return "TokenIntegrityLevel";
+		default: {
+			std::stringstream ss;
+			ss << "(" << static_cast<int>(infoClass) << ")";
+			return ss.str();
+		}
+		}
+	}
+}

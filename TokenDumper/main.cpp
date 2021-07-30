@@ -3,6 +3,7 @@
 #include "stdafx.h"
 #include <iostream>
 #include <sstream>
+#include <vector>
 #include <Windows.h>
 
 #include "Auxiliary.h"
@@ -48,6 +49,23 @@ void ShowUsage(const std::string & errStr) {
 	std::cout << "Usage: ";
 }
 
+template<typename PresentTrait>
+PresentTrait Dump(HANDLE hToken, const std::vector< TOKEN_INFORMATION_CLASS>& categories) {
+
+	PresentTrait retval;
+	retval.Start("TokenDumper");
+
+	for (auto category : categories) {
+
+		std::shared_ptr<BYTE_ARRAY> tokenInfo = GetTokenInfo(hToken, category);
+		tokenDumper::TokenDumper<PresentTrait> tokenDumper;
+		retval.AddSubTrait(tokenDumper::TokenInformationClassToString(category).c_str(), tokenDumper.Dump(tokenInfo->Get(), category));
+	}
+
+	return std::move(retval);
+
+}
+
 int main(int argc, char** argv)
 {
 
@@ -80,23 +98,22 @@ int main(int argc, char** argv)
 	}
 
 
-	HANDLE token = nullptr;
-	if (!::OpenProcessToken(tokenDumper::GetProcessHandle(pid), TOKEN_QUERY, &token)) {
+	HANDLE hToken = nullptr;
+	if (!::OpenProcessToken(tokenDumper::GetProcessHandle(pid), TOKEN_QUERY, &hToken)) {
 		std::stringstream ss;
 		ss << "Failed to open token pid: " << pid;
 		throw tokenDumper::win32_exception(GetLastError(), ss.str());
 	}
 
+	std::vector<TOKEN_INFORMATION_CLASS> tokenInfoClasses = { TokenIntegrityLevel };
 
-	std::shared_ptr<BYTE_ARRAY> tokenInfo = GetTokenInfo(token, TokenIntegrityLevel);
-
-	if(RESULT_FORMAT::JSON == format){
-		tokenDumper::TokenDumper<tokenDumper::JsonTrait> tokenDumper;
-		tokenDumper.Dump(tokenInfo->Get(), TokenIntegrityLevel, std::cout);
+	if (RESULT_FORMAT::JSON == format) {
+		tokenDumper::JsonTrait result = Dump<tokenDumper::JsonTrait>(hToken, tokenInfoClasses);
+		result.Print(std::cout);
 	}
 	else if (RESULT_FORMAT::XML == format) {
-		tokenDumper::TokenDumper<tokenDumper::XMLTrait> tokenDumper;
-		tokenDumper.Dump(tokenInfo->Get(), TokenIntegrityLevel, std::cout);
+		tokenDumper::XMLTrait result = Dump<tokenDumper::XMLTrait>(hToken, tokenInfoClasses);
+		result.Print(std::cout);
 	}
 
 }

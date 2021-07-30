@@ -10,7 +10,9 @@ namespace tokenDumper {
 	public:
 		explicit TokenDumper() {
 		}
-		void Dump(const BYTE* data, TOKEN_INFORMATION_CLASS infoClass, std::ostream & os);
+
+		typename PresentTrait::InfoType Dump(const BYTE* data, TOKEN_INFORMATION_CLASS infoClass);
+
 
 	private:
 		// Dump each class
@@ -64,7 +66,11 @@ namespace tokenDumper {
 		//TokenOriginatingProcessTrustLevel,
 		//MaxTokenInfoClass  
 	private:
+	public:
 	};
+
+	// Helper Functions
+	std::string TokenInformationClassToString(TOKEN_INFORMATION_CLASS infoClass);
 };
 
 #include "TokenDumper.hpp"

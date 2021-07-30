@@ -9,10 +9,18 @@ namespace tokenDumper {
 
 	//////////////////////// Class JsonTrait
 
-	JsonTrait::JsonTrait() { 
+	JsonTrait::JsonTrait() noexcept { 
 		m_obj.SetObject();
 	}
 
+
+	JsonTrait::JsonTrait(JsonTrait&& rhs) noexcept : m_obj(std::move(rhs.m_obj)) {
+
+	}
+	JsonTrait& JsonTrait::operator=(JsonTrait&& rhs) noexcept {
+		m_obj = std::move(rhs.m_obj);
+		return *this;
+	}
 
 	void JsonTrait::Start(const char * title) {
 	}
@@ -47,10 +55,13 @@ namespace tokenDumper {
 		m_obj.AddMember(vName, val, m_obj.GetAllocator());
 	}
 
-	void JsonTrait::AddOtherTrait(const char * name, const InfoType& info) {
-
+	void JsonTrait::AddSubTrait(const char * name, const InfoType& info) {
+		
+		rapidjson::Value vName;
+		vName.SetString(name, m_obj.GetAllocator());	// deep-copy
 		rapidjson::Value subObj = rapidjson::Value(info, m_obj.GetAllocator());
-		m_obj.AddMember(rapidjson::StringRef(name), subObj, m_obj.GetAllocator());
+		m_obj.AddMember(vName, subObj, m_obj.GetAllocator());
+
 	}
 
 	void JsonTrait::Print(std::ostream& os) {
@@ -62,7 +73,19 @@ namespace tokenDumper {
 	}
 
 	//////////////////////// Class XMLTrait
-	XMLTrait::XMLTrait() {
+	XMLTrait::XMLTrait() noexcept {
+
+	} 
+
+	XMLTrait::XMLTrait(XMLTrait&& rhs) noexcept : m_obj(std::move(rhs.m_obj)), m_curNode(std::move(rhs.m_curNode)) {
+
+	}
+
+	XMLTrait& XMLTrait::operator=(XMLTrait&& rhs) noexcept {
+		m_obj = std::move(rhs.m_obj);
+		m_curNode = std::move(rhs.m_curNode);
+
+		return *this;
 
 	}
 
@@ -96,7 +119,7 @@ namespace tokenDumper {
 		}
 	}
 
-	void XMLTrait::AddOtherTrait(const char* name, const InfoType& info) {
+	void XMLTrait::AddSubTrait(const char* name, const InfoType& info) {
 
 		m_obj.first_child().append_copy(info.first_child());
 	}
