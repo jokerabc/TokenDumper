@@ -5,6 +5,8 @@ namespace tokenDumper {
 	std::string TokenInformationClassToString(TOKEN_INFORMATION_CLASS infoClass) {
 
 		switch (infoClass) {
+		case TokenUser:
+			return "TokenUser";
 		case TokenIntegrityLevel:
 			return "TokenIntegrityLevel";
 		default: {

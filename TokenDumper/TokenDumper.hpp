@@ -7,11 +7,13 @@ namespace tokenDumper {
 
 	template<typename PresentTrait>
 	typename PresentTrait::InfoType TokenDumper<PresentTrait>::Dump(const BYTE* data, TOKEN_INFORMATION_CLASS infoClass) {
-	
+
 
 		switch (infoClass) {
+		case TokenUser: {
+			return DumpTokenUser(data);
+		}
 		case TokenIntegrityLevel: {
-			//			trait.AddOtherTrait("IntegrityLevel", DumpTokenIntegrityLevel(data));
 			return DumpTokenIntegrityLevel(data);
 		}
 			default:{
@@ -26,14 +28,31 @@ namespace tokenDumper {
 
 	}
 
-	
+	template<typename PresentTrait>
+	typename PresentTrait::InfoType TokenDumper<PresentTrait>::DumpTokenUser(const BYTE* data) {
+
+		const TOKEN_USER * user = reinterpret_cast<const TOKEN_USER*>(data);
+
+		PresentTrait trait;
+		trait.Start("User");
+
+		// Get a SID
+		std::string strSid = ConvertSidToString(user->User.Sid);
+		trait.AddItem("Sid", strSid.c_str(), FALSE, FALSE);
+
+		// Get an attribute
+		trait.AddItem("Attributes", std::to_string(user->User.Attributes).c_str(), TRUE, FALSE);
+
+		return trait.End();
+
+	}
+
+
 	template<typename PresentTrait>
 	typename PresentTrait::InfoType TokenDumper<PresentTrait>::DumpTokenIntegrityLevel(const BYTE* data) {
 
-		//PresentTrait trait(m_os);void 
 		const TOKEN_MANDATORY_LABEL* mandatoryLevel = reinterpret_cast<const TOKEN_MANDATORY_LABEL*>(data);
-		//m_trait.OpenGroup("IntegrityLevel");
-	
+
 		PresentTrait trait;
 
 		trait.Start("IntegrityLevel");
@@ -65,8 +84,6 @@ namespace tokenDumper {
 		// Get an attribute
 		trait.AddItem("Attributes", std::to_string(mandatoryLevel->Label.Attributes).c_str(), TRUE, FALSE);
 
-		//trait.CloseGroup();
-		
 		return trait.End();
 	}
 

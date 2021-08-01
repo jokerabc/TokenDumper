@@ -17,7 +17,7 @@ namespace tokenDumper {
 	private:
 		// Dump each class
 		typename PresentTrait::InfoType DumpTokenUser(const BYTE* data);
-		//TokenGroups,
+		typename PresentTrait::InfoType DumpTokenGroups(const BYTE* data);
 		//TokenPrivileges,
 		//TokenOwner,
 		//TokenPrimaryGroup,
