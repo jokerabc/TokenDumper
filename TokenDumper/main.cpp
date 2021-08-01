@@ -109,11 +109,11 @@ int main(int argc, char** argv)
 
 	if (RESULT_FORMAT::JSON == format) {
 		tokenDumper::JsonTrait result = Dump<tokenDumper::JsonTrait>(hToken, tokenInfoClasses);
-		result.Print(std::cout);
+		std::cout << result;
 	}
 	else if (RESULT_FORMAT::XML == format) {
 		tokenDumper::XMLTrait result = Dump<tokenDumper::XMLTrait>(hToken, tokenInfoClasses);
-		result.Print(std::cout);
+		std::cout << result;
 	}
 
 }

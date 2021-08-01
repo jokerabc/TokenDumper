@@ -33,7 +33,7 @@ namespace tokenDumper {
 		void AddItem(const char* name, const char* value, bool bIsNumber, bool bIsAttr);
 		void AddSubTrait(const char * name,  const InfoType& info);
 		// TODO: will implement operator <<
-		void Print(std::ostream& os);
+		void Print(std::ostream& os) const;
 	private:
 		InfoType			 m_obj;
 	};
@@ -58,11 +58,24 @@ namespace tokenDumper {
 		void CloseGroup();
 		void AddItem(const char* name, const char* value, bool IsNumber, bool bIsAttr);
 		void AddSubTrait(const char * name,  const InfoType& info);
-		void Print(std::ostream& os);
+		void Print(std::ostream& os) const;
 	private:
 		InfoType			 m_obj;
 		pugi::xml_node		 m_curNode;
 	};
 };
 
+/*template<typename T, typename std::enable_if_t<
+	std::disjunction_v<
+	std::is_same_v<T, tokenDumper::JsonTrait>,
+	std::is_same_v<T, tokenDumper::XMLTrait> >>>*/
+
+// Only for JsonTrait and XMLTrait
+template <class T,
+	typename std::enable_if_t<std::is_same_v<T, tokenDumper::JsonTrait> || std::is_same_v<T, tokenDumper::XMLTrait> >* = nullptr>
+	std::ostream& operator << (std::ostream& os, const T& obj) {
+
+	obj.Print(os);
+	return os;
+}
 

@@ -64,7 +64,7 @@ namespace tokenDumper {
 
 	}
 
-	void JsonTrait::Print(std::ostream& os) {
+	void JsonTrait::Print(std::ostream& os) const {
 
 		rapidjson::StringBuffer buffer;
 		rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
@@ -124,10 +124,9 @@ namespace tokenDumper {
 		m_obj.first_child().append_copy(info.first_child());
 	}
 
-	void XMLTrait::Print(std::ostream& os) {
-		
+	void XMLTrait::Print(std::ostream& os) const {
+
 		m_obj.print(os);
 	}
 }
-
 
