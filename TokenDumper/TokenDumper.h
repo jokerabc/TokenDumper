@@ -1,5 +1,7 @@
 #pragma once
 #include <ostream>
+#include <vector>
+#include <string>
 #include <Windows.h>
 
 namespace tokenDumper {
@@ -71,6 +73,10 @@ namespace tokenDumper {
 
 	// Helper Functions
 	std::string TokenInformationClassToString(TOKEN_INFORMATION_CLASS infoClass);
+
+	std::vector<std::string> GroupAttributesToString(DWORD attributes);
+	std::string FirstRidToString(DWORD rid);
+	std::string RidForGroupsToString(DWORD rid);
 };
 
 #include "TokenDumper.hpp"

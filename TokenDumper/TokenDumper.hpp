@@ -1,5 +1,6 @@
 
 #include <string>
+#include <vector>
 #include <rapidjson/prettywriter.h>
 
 #include "Auxiliary.h"
@@ -12,6 +13,9 @@ namespace tokenDumper {
 		switch (infoClass) {
 		case TokenUser: {
 			return DumpTokenUser(data);
+		}
+		case TokenGroups: {
+			return DumpTokenGroups(data);
 		}
 		case TokenIntegrityLevel: {
 			return DumpTokenIntegrityLevel(data);
@@ -47,6 +51,89 @@ namespace tokenDumper {
 
 	}
 
+	template<typename PresentTrait>
+	typename PresentTrait::InfoType TokenDumper<PresentTrait>::DumpTokenGroups(const BYTE* data) {
+
+		const TOKEN_GROUPS* groups = reinterpret_cast<const TOKEN_GROUPS*>(data);
+
+		PresentTrait trait;
+		trait.Start("Groups");
+
+		DWORD groupCount = groups->GroupCount;
+		size_t initSize = 3;
+		std::vector<char> bufName(initSize), bufDomainName(initSize);
+
+		for (DWORD index = 0; index < groupCount; ++index) {
+
+			SID_AND_ATTRIBUTES groupSidAndAttributes = groups->Groups[index];
+
+			DWORD bufNameSize = static_cast<DWORD>(bufName.size());
+			DWORD bufDomainNameSize = static_cast<DWORD>(bufDomainName.size());
+
+			SID_NAME_USE nameUse;
+			if (!LookupAccountSidA(NULL, groupSidAndAttributes.Sid, &bufName[0], &bufNameSize, &bufDomainName[0], &bufDomainNameSize, &nameUse)){
+
+				DWORD err = GetLastError();
+				if (ERROR_INSUFFICIENT_BUFFER == err) {
+					DWORD newSize = (bufNameSize > bufDomainNameSize) ? bufNameSize : bufDomainNameSize;
+					bufName.resize(newSize);
+					bufDomainName.resize(newSize);
+
+					bufNameSize = bufDomainNameSize = newSize;
+
+					if (!LookupAccountSidA(NULL, groupSidAndAttributes.Sid, &bufName[0], &bufNameSize, &bufDomainName[0], &bufDomainNameSize, &nameUse)) {
+					}
+
+				}
+			}
+
+			std::string groupName;
+			if ('\0' ==  bufDomainName[0]) {	//empty
+				groupName = &bufName[0];
+			}
+			else {
+				groupName = &bufDomainName[0];
+				groupName += '\\';
+				groupName += &bufName[0];
+
+			}
+
+			trait.OpenGroup(groupName.c_str());
+
+			// Get a SID
+			std::string strSid = ConvertSidToString(groupSidAndAttributes.Sid);
+			trait.AddItem("Sid", strSid.c_str(), FALSE, TRUE);
+
+			// Get an attribute
+			std::vector<std::string> strAttributes = GroupAttributesToString(groupSidAndAttributes.Attributes);
+			std::stringstream ssAttrs;
+			ssAttrs << std::to_string(groupSidAndAttributes.Attributes);
+			if (!strAttributes.empty()) {
+
+				std::vector<std::string>::const_iterator it = strAttributes.begin();
+				std::vector<std::string>::const_iterator end_it = strAttributes.end();
+
+				ssAttrs << '(';
+				while (true) {
+					ssAttrs << *it;
+					++it;
+					if (end_it == it) {
+						ssAttrs << ")";
+						break;
+					}
+					else {
+						ssAttrs << " | ";
+					}
+				}
+			}
+
+			trait.AddItem("Attributes", ssAttrs.str().c_str(), FALSE, FALSE);
+			trait.CloseGroup();
+
+		}
+
+		return trait.End();
+	}
 
 	template<typename PresentTrait>
 	typename PresentTrait::InfoType TokenDumper<PresentTrait>::DumpTokenIntegrityLevel(const BYTE* data) {

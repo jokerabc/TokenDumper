@@ -1,5 +1,6 @@
 #pragma once
 #include <ostream>
+#include <stack>
 #include <rapidjson/document.h>
 #include <pugixml.hpp>
 
@@ -13,6 +14,21 @@ namespace tokenDumper {
 	*  3. void AddItem(const char * name, const char * value, bool bIsNumber, bool bIsAttr);
 	*/
 	class JsonTrait {
+	private:
+		// OpenGroup function uses this structure to save name and rapidjson::Value.
+		struct JSON_OBJECT {
+			JSON_OBJECT() = delete;
+			JSON_OBJECT(const JSON_OBJECT&) = delete;
+			JSON_OBJECT& operator = (const JSON_OBJECT&) = delete;
+			JSON_OBJECT(std::string&& name, rapidjson::Value&& obj) : m_name(std::move(name)), m_obj(std::move(obj)){}
+			JSON_OBJECT(JSON_OBJECT&& obj) noexcept : m_name(std::move(obj.m_name)), m_obj(std::move(obj.m_obj)) {}
+			JSON_OBJECT& operator = (JSON_OBJECT&& obj) noexcept {
+				m_name = std::move(obj.m_name);
+				m_obj = std::move(obj.m_obj);
+			}
+			std::string			m_name;
+			rapidjson::Value	m_obj;
+		};
 	public:
 		using InfoType = rapidjson::Document;
 	public:
@@ -32,10 +48,10 @@ namespace tokenDumper {
 		void CloseGroup();
 		void AddItem(const char* name, const char* value, bool bIsNumber, bool bIsAttr);
 		void AddSubTrait(const char * name,  const InfoType& info);
-		// TODO: will implement operator <<
 		void Print(std::ostream& os) const;
 	private:
-		InfoType			 m_obj;
+		InfoType						m_obj;
+		std::stack<JSON_OBJECT>			m_objects;
 	};
 
 	class XMLTrait {
