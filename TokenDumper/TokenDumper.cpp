@@ -9,6 +9,8 @@ namespace tokenDumper {
 			return "TokenUser";
 		case TokenGroups:
 			return "TokenGroups";
+		case TokenPrivileges:
+			return "TokenPrivilges";
 		case TokenIntegrityLevel:
 			return "TokenIntegrityLevel";
 		default: {
@@ -19,6 +21,31 @@ namespace tokenDumper {
 		}
 	}
 
+	std::string AttributesToString(DWORD attributes, const std::vector<std::string>& strAttributes) {
+
+		std::stringstream ssAttrs;
+		ssAttrs << std::to_string(attributes);
+		if (!strAttributes.empty()) {
+
+			std::vector<std::string>::const_iterator it = strAttributes.begin();
+			std::vector<std::string>::const_iterator end_it = strAttributes.end();
+
+			ssAttrs << '(';
+			while (true) {
+				ssAttrs << *it;
+				++it;
+				if (end_it == it) {
+					ssAttrs << ")";
+					break;
+				}
+				else {
+					ssAttrs << " | ";
+				}
+			}
+		}
+
+		return ssAttrs.str();
+	}
 	std::vector<std::string> GroupAttributesToString(DWORD attributes) {
 
 		std::vector<std::string> retval;
@@ -43,6 +70,24 @@ namespace tokenDumper {
 
 		return retval;
 	}
+
+	std::vector<std::string> PrivilegeAttributesToString(DWORD attributes) {
+
+		std::vector<std::string> retval;
+		if (SE_PRIVILEGE_ENABLED_BY_DEFAULT & attributes)
+			retval.emplace_back("EnabledByDefault");
+		if (SE_PRIVILEGE_ENABLED & attributes)
+			retval.emplace_back("Enabled");
+		if (SE_PRIVILEGE_REMOVED & attributes)
+			retval.emplace_back("Removed");
+		if (SE_PRIVILEGE_USED_FOR_ACCESS & attributes)
+			retval.emplace_back("UsedForAccess");
+
+		if (retval.empty())
+			retval.emplace_back("Disabled");
+		return retval;
+	}
+
 	std::string FirstRidToString(DWORD rid) {
 		switch (rid) {
 		case SECURITY_DIALUP_RID:

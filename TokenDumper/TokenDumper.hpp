@@ -20,6 +20,9 @@ namespace tokenDumper {
 		case TokenIntegrityLevel: {
 			return DumpTokenIntegrityLevel(data);
 		}
+		case TokenPrivileges: {
+			return DumpTokenPrivileges(data);
+		}
 			default:{
 
 				std::stringstream ss;
@@ -106,28 +109,9 @@ namespace tokenDumper {
 
 			// Get an attribute
 			std::vector<std::string> strAttributes = GroupAttributesToString(groupSidAndAttributes.Attributes);
-			std::stringstream ssAttrs;
-			ssAttrs << std::to_string(groupSidAndAttributes.Attributes);
-			if (!strAttributes.empty()) {
+			std::string strDetailedAttributes = AttributesToString( groupSidAndAttributes.Attributes, strAttributes);
 
-				std::vector<std::string>::const_iterator it = strAttributes.begin();
-				std::vector<std::string>::const_iterator end_it = strAttributes.end();
-
-				ssAttrs << '(';
-				while (true) {
-					ssAttrs << *it;
-					++it;
-					if (end_it == it) {
-						ssAttrs << ")";
-						break;
-					}
-					else {
-						ssAttrs << " | ";
-					}
-				}
-			}
-
-			trait.AddItem("Attributes", ssAttrs.str().c_str(), FALSE, FALSE);
+			trait.AddItem("Attributes", strDetailedAttributes.c_str(), FALSE, FALSE);
 			trait.CloseGroup();
 
 		}
@@ -136,12 +120,41 @@ namespace tokenDumper {
 	}
 
 	template<typename PresentTrait>
+	typename PresentTrait::InfoType TokenDumper<PresentTrait>::DumpTokenPrivileges(const BYTE* data) {
+
+		const TOKEN_PRIVILEGES* privileges = reinterpret_cast<const TOKEN_PRIVILEGES*>(data);
+
+		PresentTrait trait;
+		trait.Start("Privilegs");
+
+		for (DWORD index = 0; index < privileges->PrivilegeCount; ++index) {
+
+			LUID_AND_ATTRIBUTES privilegeAndAttributes = privileges->Privileges[index];
+
+			//Convert privilege to string
+			std::string strPrivilege = ConvertLuidToString(&(privilegeAndAttributes.Luid));
+			trait.OpenGroup(strPrivilege.c_str());
+
+			// Get an attribute
+			std::vector<std::string> strAttributes = PrivilegeAttributesToString(privilegeAndAttributes.Attributes);
+			std::string strDetailedAttributes= AttributesToString(privilegeAndAttributes.Attributes, strAttributes);
+
+			trait.AddItem("Attributes", strDetailedAttributes.c_str() , FALSE, FALSE);
+			trait.CloseGroup();
+		}
+
+
+		return trait.End();
+
+
+	}
+
+	template<typename PresentTrait>
 	typename PresentTrait::InfoType TokenDumper<PresentTrait>::DumpTokenIntegrityLevel(const BYTE* data) {
 
 		const TOKEN_MANDATORY_LABEL* mandatoryLevel = reinterpret_cast<const TOKEN_MANDATORY_LABEL*>(data);
 
 		PresentTrait trait;
-
 		trait.Start("IntegrityLevel");
 
 		// S-1-16-x stands for the mandatory level

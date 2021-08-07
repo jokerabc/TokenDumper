@@ -9,6 +9,7 @@ namespace tokenDumper{
 
 	HANDLE GetProcessHandle(DWORD pid);
 	std::string ConvertSidToString(PSID pSid);
+	std::string ConvertLuidToString(PLUID pLuid);
 
 	class win32_exception : public std::runtime_error {
 	public:

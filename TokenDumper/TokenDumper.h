@@ -20,7 +20,7 @@ namespace tokenDumper {
 		// Dump each class
 		typename PresentTrait::InfoType DumpTokenUser(const BYTE* data);
 		typename PresentTrait::InfoType DumpTokenGroups(const BYTE* data);
-		//TokenPrivileges,
+		typename PresentTrait::InfoType DumpTokenPrivileges(const BYTE* data);
 		//TokenOwner,
 		//TokenPrimaryGroup,
 		//TokenDefaultDacl,
@@ -74,7 +74,9 @@ namespace tokenDumper {
 	// Helper Functions
 	std::string TokenInformationClassToString(TOKEN_INFORMATION_CLASS infoClass);
 
+	std::string AttributesToString(DWORD attributes, const std::vector<std::string>& strAttributes);
 	std::vector<std::string> GroupAttributesToString(DWORD attributes);
+	std::vector<std::string> PrivilegeAttributesToString(DWORD attributes);
 	std::string FirstRidToString(DWORD rid);
 	std::string RidForGroupsToString(DWORD rid);
 };
