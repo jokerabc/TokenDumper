@@ -17,11 +17,14 @@ namespace tokenDumper {
 		case TokenGroups: {
 			return DumpTokenGroups(data);
 		}
-		case TokenIntegrityLevel: {
-			return DumpTokenIntegrityLevel(data);
-		}
 		case TokenPrivileges: {
 			return DumpTokenPrivileges(data);
+		}
+		case TokenOwner: {
+			return DumpTokenOwner(data);
+		}
+		case TokenIntegrityLevel: {
+			return DumpTokenIntegrityLevel(data);
 		}
 			default:{
 
@@ -63,43 +66,12 @@ namespace tokenDumper {
 		trait.Start("Groups");
 
 		DWORD groupCount = groups->GroupCount;
-		size_t initSize = 3;
-		std::vector<char> bufName(initSize), bufDomainName(initSize);
 
 		for (DWORD index = 0; index < groupCount; ++index) {
 
 			SID_AND_ATTRIBUTES groupSidAndAttributes = groups->Groups[index];
 
-			DWORD bufNameSize = static_cast<DWORD>(bufName.size());
-			DWORD bufDomainNameSize = static_cast<DWORD>(bufDomainName.size());
-
-			SID_NAME_USE nameUse;
-			if (!LookupAccountSidA(NULL, groupSidAndAttributes.Sid, &bufName[0], &bufNameSize, &bufDomainName[0], &bufDomainNameSize, &nameUse)){
-
-				DWORD err = GetLastError();
-				if (ERROR_INSUFFICIENT_BUFFER == err) {
-					DWORD newSize = (bufNameSize > bufDomainNameSize) ? bufNameSize : bufDomainNameSize;
-					bufName.resize(newSize);
-					bufDomainName.resize(newSize);
-
-					bufNameSize = bufDomainNameSize = newSize;
-
-					if (!LookupAccountSidA(NULL, groupSidAndAttributes.Sid, &bufName[0], &bufNameSize, &bufDomainName[0], &bufDomainNameSize, &nameUse)) {
-					}
-
-				}
-			}
-
-			std::string groupName;
-			if ('\0' ==  bufDomainName[0]) {	//empty
-				groupName = &bufName[0];
-			}
-			else {
-				groupName = &bufDomainName[0];
-				groupName += '\\';
-				groupName += &bufName[0];
-
-			}
+			std::string groupName = LookupAccount(groupSidAndAttributes.Sid);
 
 			trait.OpenGroup(groupName.c_str());
 
@@ -143,10 +115,25 @@ namespace tokenDumper {
 			trait.CloseGroup();
 		}
 
-
 		return trait.End();
 
+	}
 
+	template<typename PresentTrait>
+	typename PresentTrait::InfoType TokenDumper<PresentTrait>::DumpTokenOwner(const BYTE* data) {
+
+		const TOKEN_OWNER* owner = reinterpret_cast<const TOKEN_OWNER*>(data);
+
+		PresentTrait trait;
+		trait.Start("Onwer");
+
+		std::string strAccount = LookupAccount(owner->Owner);
+		trait.AddItem("Account", strAccount.c_str(), FALSE, FALSE);
+		std::string strSid = ConvertSidToString(owner->Owner);
+		trait.AddItem("Sid", strSid.c_str(), FALSE, FALSE);
+
+
+		return trait.End();
 	}
 
 	template<typename PresentTrait>

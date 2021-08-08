@@ -11,6 +11,8 @@ namespace tokenDumper {
 			return "TokenGroups";
 		case TokenPrivileges:
 			return "TokenPrivilges";
+		case TokenOwner:
+			return "TokenOwner";
 		case TokenIntegrityLevel:
 			return "TokenIntegrityLevel";
 		default: {

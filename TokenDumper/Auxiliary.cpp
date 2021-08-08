@@ -48,4 +48,55 @@ namespace tokenDumper {
 		}
 	}
 
+	std::string LookupAccount(PSID pSid) {
+
+		size_t initSize = 10;
+		std::vector<char> bufName(initSize), bufDomainName(initSize);
+
+		DWORD bufNameSize = static_cast<DWORD>(bufName.size());
+		DWORD bufDomainNameSize = static_cast<DWORD>(bufDomainName.size());
+
+		SID_NAME_USE nameUse;
+		if (!LookupAccountSidA(NULL, pSid, &bufName[0], &bufNameSize, &bufDomainName[0], &bufDomainNameSize, &nameUse)) {
+
+			DWORD err = GetLastError();
+			BOOL success{ FALSE };
+
+			if (ERROR_INSUFFICIENT_BUFFER == err) {
+				DWORD newSize = (bufNameSize > bufDomainNameSize) ? bufNameSize : bufDomainNameSize;
+				bufName.resize(newSize);
+				bufDomainName.resize(newSize);
+
+				bufNameSize = bufDomainNameSize = newSize;
+
+				if (!LookupAccountSidA(NULL, pSid, &bufName[0], &bufNameSize, &bufDomainName[0], &bufDomainNameSize, &nameUse)) {
+					err = GetLastError();
+					success = FALSE;
+				}
+				else {
+					success = TRUE;
+				}
+
+			}
+
+			if (!success) {
+				throw win32_exception(err, "Failed to call LookupAccountSidA in LookupAccount");
+			}
+
+
+		}
+
+		std::string accountName;
+		if ('\0' == bufDomainName[0]) {	//empty
+			accountName = &bufName[0];
+		}
+		else {
+			accountName = &bufDomainName[0];
+			accountName += '\\';
+			accountName += &bufName[0];
+
+		}
+
+		return accountName;
+	}
 };

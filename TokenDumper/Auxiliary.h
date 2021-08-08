@@ -10,6 +10,7 @@ namespace tokenDumper{
 	HANDLE GetProcessHandle(DWORD pid);
 	std::string ConvertSidToString(PSID pSid);
 	std::string ConvertLuidToString(PLUID pLuid);
+	std::string LookupAccount(PSID pSid);
 
 	class win32_exception : public std::runtime_error {
 	public:
@@ -19,6 +20,7 @@ namespace tokenDumper{
 		std::string makeMessage(DWORD lastError, const std::string & what_arg)
 		{
 			std::stringstream ss;
+			//TODO: Make a message
 	//		ss << what_arg << " Error: (" << lastError << ")" << Utils::GetErrorTextA(lastError);
 			ss << "Err: (" << lastError << ")";
 			return ss.str();
