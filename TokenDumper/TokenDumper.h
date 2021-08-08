@@ -22,7 +22,7 @@ namespace tokenDumper {
 		typename PresentTrait::InfoType DumpTokenGroups(const BYTE* data);
 		typename PresentTrait::InfoType DumpTokenPrivileges(const BYTE* data);
 		typename PresentTrait::InfoType DumpTokenOwner(const BYTE* data);
-		//TokenPrimaryGroup,
+		typename PresentTrait::InfoType DumpTokenPrimaryGroup(const BYTE* data);
 		//TokenDefaultDacl,
 		//TokenSource,
 		//TokenType,

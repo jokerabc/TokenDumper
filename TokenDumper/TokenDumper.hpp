@@ -23,6 +23,9 @@ namespace tokenDumper {
 		case TokenOwner: {
 			return DumpTokenOwner(data);
 		}
+		case TokenPrimaryGroup: {
+			return DumpTokenPrimaryGroup(data);
+		}
 		case TokenIntegrityLevel: {
 			return DumpTokenIntegrityLevel(data);
 		}
@@ -134,6 +137,24 @@ namespace tokenDumper {
 
 
 		return trait.End();
+	}
+
+	template<typename PresentTrait>
+	typename PresentTrait::InfoType TokenDumper<PresentTrait>::DumpTokenPrimaryGroup(const BYTE* data) {
+
+		const TOKEN_PRIMARY_GROUP* primaryGroup = reinterpret_cast<const TOKEN_PRIMARY_GROUP*>(data);
+
+		PresentTrait trait;
+		trait.Start("PrimaryGroup");
+
+		std::string strAccount = LookupAccount(primaryGroup->PrimaryGroup);
+		trait.AddItem("Group", strAccount.c_str(), FALSE, FALSE);
+		std::string strSid = ConvertSidToString(primaryGroup->PrimaryGroup);
+		trait.AddItem("Sid", strSid.c_str(), FALSE, FALSE);
+
+
+		return trait.End();
+
 	}
 
 	template<typename PresentTrait>
