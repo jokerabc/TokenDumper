@@ -4,13 +4,15 @@
 #include <string>
 #include <sstream>
 #include <Windows.h>
+#include <accctrl.h>
 
 namespace tokenDumper{
 
 	HANDLE GetProcessHandle(DWORD pid);
-	std::string ConvertSidToString(PSID pSid);
-	std::string ConvertLuidToString(PLUID pLuid);
-	std::string LookupAccount(PSID pSid);
+	std::string ConvertSidToString(const PSID pSid);
+	std::string ConvertLuidToString(const PLUID pLuid);
+	std::string LookupAccount(const PSID pSid);
+	std::string TrusteeToString(const PTRUSTEE_A pTrustee);
 
 	class win32_exception : public std::runtime_error {
 	public:

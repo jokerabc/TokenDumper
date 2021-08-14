@@ -105,7 +105,7 @@ int main(int argc, char** argv)
 		throw tokenDumper::win32_exception(GetLastError(), ss.str());
 	}
 
-	std::vector<TOKEN_INFORMATION_CLASS> tokenInfoClasses = { TokenUser, TokenGroups, TokenPrivileges, TokenOwner, TokenPrimaryGroup, TokenIntegrityLevel };
+	std::vector<TOKEN_INFORMATION_CLASS> tokenInfoClasses = { TokenUser, TokenGroups, TokenPrivileges, TokenOwner, TokenPrimaryGroup, TokenIntegrityLevel, TokenDefaultDacl };
 
 	if (RESULT_FORMAT::JSON == format) {
 		tokenDumper::JsonTrait result = Dump<tokenDumper::JsonTrait>(hToken, tokenInfoClasses);

@@ -1,5 +1,8 @@
 #include "stdafx.h"
 #include <vector>
+#include <exception>
+#include <string>
+#include <sstream>
 #include <sddl.h>
 #include "Auxiliary.h"
 
@@ -10,7 +13,7 @@ namespace tokenDumper {
 		return OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pid);
 	}
 
-	std::string ConvertSidToString(PSID pSid) {
+	std::string ConvertSidToString(const PSID pSid) {
 
 		LPSTR outStr = nullptr;
 		if (!ConvertSidToStringSidA(pSid, &outStr))
@@ -22,7 +25,7 @@ namespace tokenDumper {
 		return retval;
 	}
 
-	std::string ConvertLuidToString(PLUID pLuid) {
+	std::string ConvertLuidToString(const PLUID pLuid) {
 
 		std::vector<char> buf(3);
 		DWORD cchName = static_cast<DWORD>(buf.size());
@@ -48,7 +51,7 @@ namespace tokenDumper {
 		}
 	}
 
-	std::string LookupAccount(PSID pSid) {
+	std::string LookupAccount(const PSID pSid) {
 
 		size_t initSize = 10;
 		std::vector<char> bufName(initSize), bufDomainName(initSize);
@@ -98,5 +101,36 @@ namespace tokenDumper {
 		}
 
 		return accountName;
+	}
+
+	std::string TrusteeToString(const PTRUSTEE_A pTrustee) {
+
+		if (TRUSTEE_BAD_FORM == pTrustee->TrusteeForm) {
+
+			throw std::invalid_argument("Trustee is bad form in TrusteeToString");
+		}
+
+		if (TRUSTEE_IS_NAME == pTrustee->TrusteeForm) {
+			return pTrustee->ptstrName;
+		}
+		else if (TRUSTEE_IS_SID == pTrustee->TrusteeForm) {
+
+			return LookupAccount( reinterpret_cast<PSID>(pTrustee->ptstrName));
+		}
+		else if (TRUSTEE_IS_OBJECTS_AND_SID == pTrustee->TrusteeForm) {
+
+			return LookupAccount( reinterpret_cast<POBJECTS_AND_SID>(pTrustee->ptstrName)->pSid);
+		}
+		else if (TRUSTEE_IS_OBJECTS_AND_NAME == pTrustee->TrusteeForm) {
+
+			return reinterpret_cast<POBJECTS_AND_NAME_A>(pTrustee->ptstrName)->ptstrName;
+		}
+		else
+		{
+			std::stringstream ss;
+			ss << "Invalid trustee form(" << static_cast<int>(pTrustee->TrusteeForm) << ") in TrusteeToString";
+			throw std::invalid_argument(ss.str());
+		}
+
 	}
 };

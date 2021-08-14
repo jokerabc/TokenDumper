@@ -1,7 +1,9 @@
 
 #include <string>
 #include <vector>
+#include <AclAPI.h>
 #include <rapidjson/prettywriter.h>
+
 
 #include "Auxiliary.h"
 namespace tokenDumper {
@@ -25,6 +27,9 @@ namespace tokenDumper {
 		}
 		case TokenPrimaryGroup: {
 			return DumpTokenPrimaryGroup(data);
+		}
+		case TokenDefaultDacl: {
+			return DumpTokenDefaultDacl(data);
 		}
 		case TokenIntegrityLevel: {
 			return DumpTokenIntegrityLevel(data);
@@ -83,8 +88,8 @@ namespace tokenDumper {
 			trait.AddItem("Sid", strSid.c_str(), FALSE, TRUE);
 
 			// Get an attribute
-			std::vector<std::string> strAttributes = GroupAttributesToString(groupSidAndAttributes.Attributes);
-			std::string strDetailedAttributes = AttributesToString( groupSidAndAttributes.Attributes, strAttributes);
+			std::vector<std::string> strAttributes = GroupAttributesToStringVec(groupSidAndAttributes.Attributes);
+			std::string strDetailedAttributes = AttributesToString( groupSidAndAttributes.Attributes, FALSE, strAttributes);
 
 			trait.AddItem("Attributes", strDetailedAttributes.c_str(), FALSE, FALSE);
 			trait.CloseGroup();
@@ -111,8 +116,8 @@ namespace tokenDumper {
 			trait.OpenGroup(strPrivilege.c_str());
 
 			// Get an attribute
-			std::vector<std::string> strAttributes = PrivilegeAttributesToString(privilegeAndAttributes.Attributes);
-			std::string strDetailedAttributes= AttributesToString(privilegeAndAttributes.Attributes, strAttributes);
+			std::vector<std::string> strAttributes = PrivilegeAttributesToStringVec(privilegeAndAttributes.Attributes);
+			std::string strDetailedAttributes= AttributesToString(privilegeAndAttributes.Attributes, FALSE, strAttributes);
 
 			trait.AddItem("Attributes", strDetailedAttributes.c_str() , FALSE, FALSE);
 			trait.CloseGroup();
@@ -155,6 +160,81 @@ namespace tokenDumper {
 
 		return trait.End();
 
+	}
+
+	template<typename PresentTrait>
+	typename PresentTrait::InfoType TokenDumper<PresentTrait>::DumpTokenDefaultDacl(const BYTE* data) {
+
+		const TOKEN_DEFAULT_DACL* defaultAcl = reinterpret_cast<const TOKEN_DEFAULT_DACL*>(data);
+
+		PresentTrait trait;
+		trait.Start("DefaultDacl");
+
+		// Get ACEs
+		ULONG count{ 0 };
+		PEXPLICIT_ACCESS_A  pAccess{ nullptr };
+		DWORD ret{ ERROR_SUCCESS };
+		if (ERROR_SUCCESS != (ret =  GetExplicitEntriesFromAclA(defaultAcl->DefaultDacl, &count, &pAccess))) {
+
+			throw win32_exception(ret, "Failed to call GetExplicitEntriesFromAclA in DumpTokenDefaultDacl");
+		}
+
+		std::vector<ULONG> permissionIndexes, auditIndexes;
+		for (ULONG index = 0; index < count; ++index) {
+
+			if (SET_AUDIT_SUCCESS == pAccess[index].grfAccessMode || SET_AUDIT_FAILURE == pAccess[index].grfAccessMode) {
+				auditIndexes.push_back(index);
+			}
+			else {
+				permissionIndexes.push_back(index);
+			}
+		}
+
+		trait.OpenGroup("Permissions");
+
+		auto ListAces = [&trait, &pAccess](ULONG index) {
+
+			std::string strPrincipal = TrusteeToString(&(pAccess[index].Trustee));
+			trait.OpenGroup(strPrincipal.c_str());
+
+			// Type
+			// TODO: type is alwasy unknwon. I have not yet to find the reason.
+			// I think I have to use another API.
+			trait.AddItem("Type", TrusteeTypeToString(pAccess[index].Trustee.TrusteeType).c_str(), FALSE, TRUE);
+
+			// Access Mask
+			std::vector<std::string> strAccessMasks= AccessMaskToStringVec(pAccess[index].grfAccessPermissions);
+			std::string strDetailedAccessMasks = AttributesToString(pAccess[index].grfAccessPermissions, TRUE, strAccessMasks );
+			trait.AddItem("AccessMasks", strDetailedAccessMasks.c_str(), FALSE, FALSE);
+
+			// Access Mode
+			trait.AddItem("AccessMode", AccessModeToString(pAccess[index].grfAccessMode).c_str(), FALSE, FALSE);
+
+			// Inheritance
+			std::vector<std::string> strInheritances = AcesssInheritanceToStringVec(pAccess[index].grfInheritance);
+			std::string strDetailedInheritances = AttributesToString(pAccess[index].grfInheritance, TRUE, strInheritances);
+			trait.AddItem("Inheritance", strDetailedInheritances.c_str(), FALSE, FALSE);
+
+			trait.CloseGroup();
+		};
+
+		for (ULONG index : permissionIndexes) {
+
+			ListAces(index);
+		}
+
+		trait.CloseGroup();
+
+		trait.OpenGroup("Auditing");
+
+		for (ULONG index: auditIndexes) {
+
+			ListAces(index);
+		}
+
+		trait.CloseGroup();
+
+		return trait.End();
 	}
 
 	template<typename PresentTrait>

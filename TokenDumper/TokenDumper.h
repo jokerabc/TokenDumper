@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <Windows.h>
+#include <accctrl.h>
 
 namespace tokenDumper {
 
@@ -23,7 +24,7 @@ namespace tokenDumper {
 		typename PresentTrait::InfoType DumpTokenPrivileges(const BYTE* data);
 		typename PresentTrait::InfoType DumpTokenOwner(const BYTE* data);
 		typename PresentTrait::InfoType DumpTokenPrimaryGroup(const BYTE* data);
-		//TokenDefaultDacl,
+		typename PresentTrait::InfoType DumpTokenDefaultDacl(const BYTE* data);
 		//TokenSource,
 		//TokenType,
 		//TokenImpersonationLevel,
@@ -73,10 +74,13 @@ namespace tokenDumper {
 
 	// Helper Functions
 	std::string TokenInformationClassToString(TOKEN_INFORMATION_CLASS infoClass);
-
-	std::string AttributesToString(DWORD attributes, const std::vector<std::string>& strAttributes);
-	std::vector<std::string> GroupAttributesToString(DWORD attributes);
-	std::vector<std::string> PrivilegeAttributesToString(DWORD attributes);
+	std::string TrusteeTypeToString(TRUSTEE_TYPE type);
+	std::vector<std::string> AccessMaskToStringVec(ACCESS_MASK mask);
+	std::vector<std::string> AcesssInheritanceToStringVec(DWORD inheritance);
+	std::string AccessModeToString(ACCESS_MODE mode);
+	std::string AttributesToString(DWORD attributes, BOOL bHex, const std::vector<std::string>& strAttributes);
+	std::vector<std::string> GroupAttributesToStringVec(DWORD attributes);
+	std::vector<std::string> PrivilegeAttributesToStringVec(DWORD attributes);
 	std::string FirstRidToString(DWORD rid);
 	std::string RidForGroupsToString(DWORD rid);
 };
