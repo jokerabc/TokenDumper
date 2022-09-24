@@ -52,6 +52,9 @@ namespace tokenDumper {
 		case TokenGroupsAndPrivileges: {
 			return DumpTokenGroupsAndPrivileges(data);
 		}
+		case TokenSandBoxInert: {
+			return DumpTokenSandBoxInert(data);
+		}
 		case TokenIntegrityLevel: {
 			return DumpTokenIntegrityLevel(data);
 		}
@@ -367,6 +370,19 @@ namespace tokenDumper {
 		trait.CloseGroup();
 
         trait.AddItem("AuthenticationId", ConvertLuidToString(&(groupsAndPrivilges->AuthenticationId)).c_str(), FALSE, TRUE);
+
+		return trait.End();
+	}
+
+	template<typename PresentTrait>
+	typename PresentTrait::InfoType TokenDumper<PresentTrait>::DumpTokenSandBoxInert(const BYTE* data) {
+
+		const DWORD* sandBoxInert = reinterpret_cast<const DWORD*>(data);
+
+		PresentTrait trait;
+		trait.Start("SandBoxInert");
+
+		trait.AddItem("Inert", std::to_string(*sandBoxInert).c_str(), TRUE, TRUE);
 
 		return trait.End();
 	}
