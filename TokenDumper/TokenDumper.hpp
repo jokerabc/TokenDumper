@@ -55,6 +55,9 @@ namespace tokenDumper {
 		case TokenSandBoxInert: {
 			return DumpTokenSandBoxInert(data);
 		}
+		case TokenOrigin: {
+			return DumpTokenOrigin(data);
+		}
 		case TokenIntegrityLevel: {
 			return DumpTokenIntegrityLevel(data);
 		}
@@ -384,6 +387,19 @@ namespace tokenDumper {
 
 		trait.AddItem("Inert", std::to_string(*sandBoxInert).c_str(), TRUE, TRUE);
 
+		return trait.End();
+	}
+
+	template<typename PresentTrait>
+	typename PresentTrait::InfoType TokenDumper<PresentTrait>::DumpTokenOrigin(const BYTE* data) {
+
+		const TOKEN_ORIGIN* origin = reinterpret_cast<const TOKEN_ORIGIN*>(data);
+
+		PresentTrait trait;
+		trait.Start("Origin");
+		
+		trait.AddItem("LogonSession", ConvertLuidToString(&(origin->OriginatingLogonSession)).c_str(), FALSE, TRUE);
+		
 		return trait.End();
 	}
 

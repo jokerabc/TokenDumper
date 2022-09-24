@@ -33,6 +33,8 @@ namespace tokenDumper {
 			return "TokenSessionId";
 		case TokenSandBoxInert:
 			return "TokenSandBoxInert";
+		case TokenOrigin:
+			return "TokenOrigin";
 		case TokenGroupsAndPrivileges:
 			return "TokenGroupsAndPrivileges";
 		default: {

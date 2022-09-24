@@ -34,8 +34,8 @@ namespace tokenDumper {
 		typename PresentTrait::InfoType DumpTokenGroupsAndPrivileges(const BYTE* data);
 		//TokenSessionReference,	//Reserved
 		typename PresentTrait::InfoType DumpTokenSandBoxInert(const BYTE* data);
-		//TokenAuditPolicy,
-		//TokenOrigin,
+		//TokenAuditPolicy,			//Reserved
+		typename PresentTrait::InfoType DumpTokenOrigin(const BYTE* data);
 		//TokenElevationType,
 		//TokenLinkedToken,
 		//TokenElevation,

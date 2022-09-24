@@ -60,7 +60,7 @@ namespace tokenDumper {
 
 		std::stringstream ss;
 		ss << std::setfill('0') << std::setw(8) << std::hex << std::uppercase << pLuid->HighPart
-			<< "-" << pLuid->LowPart;
+			<< "-" << std::setw(8) << pLuid->LowPart;
 
 		return ss.str();
 	}
