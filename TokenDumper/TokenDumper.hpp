@@ -43,6 +43,9 @@ namespace tokenDumper {
 		case TokenStatistics: {
 			return DumpTokenStatistics(data);
 		}
+		case TokenRestrictedSids: {
+			return DumpTokenRestrictedSids(data);
+		}
 		case TokenIntegrityLevel: {
 			return DumpTokenIntegrityLevel(data);
 		}
@@ -313,6 +316,41 @@ namespace tokenDumper {
 		return trait.End();
 	}
 	
+	template<typename PresentTrait>
+	typename PresentTrait::InfoType TokenDumper<PresentTrait>::DumpTokenRestrictedSids(const BYTE* data) {
+
+		const TOKEN_GROUPS* groups = reinterpret_cast<const TOKEN_GROUPS*>(data);
+
+		PresentTrait trait;
+		trait.Start("RestrictedSids");
+
+		DWORD groupCount = groups->GroupCount;
+
+		for (DWORD index = 0; index < groupCount; ++index) {
+
+			SID_AND_ATTRIBUTES groupSidAndAttributes = groups->Groups[index];
+
+			std::string groupName = LookupAccount(groupSidAndAttributes.Sid);
+
+			trait.OpenGroup(groupName.c_str());
+
+			// Get a SID
+			std::string strSid = ConvertSidToString(groupSidAndAttributes.Sid);
+			trait.AddItem("Sid", strSid.c_str(), FALSE, TRUE);
+
+			// Get an attribute
+			std::vector<std::string> strAttributes = GroupAttributesToStringVec(groupSidAndAttributes.Attributes);
+			std::string strDetailedAttributes = AttributesToString( groupSidAndAttributes.Attributes, FALSE, strAttributes);
+
+			trait.AddItem("Attributes", strDetailedAttributes.c_str(), FALSE, FALSE);
+			trait.CloseGroup();
+
+		}
+
+		return trait.End();
+	
+	}
+
 	template<typename PresentTrait>
 	typename PresentTrait::InfoType TokenDumper<PresentTrait>::DumpTokenIntegrityLevel(const BYTE* data) {
 

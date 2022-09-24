@@ -27,6 +27,8 @@ namespace tokenDumper {
 			return "TokenIntegrityLevel";
 		case TokenStatistics:
 			return "TokenStatistics";
+		case TokenRestrictedSids:
+			return "TokenRestrictedSids";
 		default: {
 			std::stringstream ss;
 			ss << "(" << static_cast<int>(infoClass) << ")";

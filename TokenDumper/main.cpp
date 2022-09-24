@@ -111,7 +111,8 @@ int main(int argc, char** argv)
 		std::vector<TOKEN_INFORMATION_CLASS> tokenInfoClasses = { TokenUser, TokenGroups, TokenPrivileges, TokenOwner, 
 			TokenPrimaryGroup, TokenIntegrityLevel, TokenDefaultDacl, /*TokenSource*/
 			TokenType, /*TokenImpersonationLevel*/
-			TokenStatistics};
+			TokenStatistics,
+			TokenRestrictedSids};
 
 		if (RESULT_FORMAT::JSON == format) {
 			tokenDumper::JsonTrait result = Dump<tokenDumper::JsonTrait>(hToken, tokenInfoClasses);

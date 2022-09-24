@@ -29,7 +29,7 @@ namespace tokenDumper {
 		typename PresentTrait::InfoType DumpTokenType(const BYTE* data);
 		typename PresentTrait::InfoType DumpTokenImpersonationLevel(const BYTE* data);
 		typename PresentTrait::InfoType DumpTokenStatistics(const BYTE* data);
-		//TokenRestrictedSids,
+		typename PresentTrait::InfoType DumpTokenRestrictedSids(const BYTE* data);
 		//TokenSessionId,
 		//TokenGroupsAndPrivileges,
 		//TokenSessionReference,
