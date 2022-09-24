@@ -58,6 +58,9 @@ namespace tokenDumper {
 		case TokenOrigin: {
 			return DumpTokenOrigin(data);
 		}
+		case TokenElevationType: {
+			return DumpTokenElevationType(data);
+		}
 		case TokenIntegrityLevel: {
 			return DumpTokenIntegrityLevel(data);
 		}
@@ -400,6 +403,32 @@ namespace tokenDumper {
 		
 		trait.AddItem("LogonSession", ConvertLuidToString(&(origin->OriginatingLogonSession)).c_str(), FALSE, TRUE);
 		
+		return trait.End();
+	}
+
+	template<typename PresentTrait>
+	typename PresentTrait::InfoType TokenDumper<PresentTrait>::DumpTokenElevationType(const BYTE* data) {
+
+		const TOKEN_ELEVATION_TYPE* elevationType = reinterpret_cast<const TOKEN_ELEVATION_TYPE*>(data);
+
+		PresentTrait trait;
+		trait.Start("ElevationType");
+
+		std::string strElevationType("Unknown");
+		switch (*elevationType) {
+		case TokenElevationTypeDefault:
+			strElevationType = "Default";
+			break;
+		case TokenElevationTypeFull:
+			strElevationType = "Full";
+			break;
+		case TokenElevationTypeLimited:
+			strElevationType = "Limited";
+			break;
+		}
+
+		trait.AddItem("Type", strElevationType.c_str(), FALSE, TRUE);
+
 		return trait.End();
 	}
 

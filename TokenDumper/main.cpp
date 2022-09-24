@@ -116,7 +116,8 @@ int main(int argc, char** argv)
 			TokenSessionId,
 			TokenGroupsAndPrivileges,
 			TokenSandBoxInert,
-			TokenOrigin};
+			TokenOrigin,
+			TokenElevationType};
 
 		if (RESULT_FORMAT::JSON == format) {
 			tokenDumper::JsonTrait result = Dump<tokenDumper::JsonTrait>(hToken, tokenInfoClasses);
