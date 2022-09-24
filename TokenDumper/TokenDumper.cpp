@@ -21,6 +21,8 @@ namespace tokenDumper {
 			return "TokenSource";
 		case TokenType:
 			return "TokenType";
+		case TokenImpersonationLevel:
+			return "TokenImpersonationLevel";
 		case TokenIntegrityLevel:
 			return "TokenIntegrityLevel";
 		default: {
@@ -323,6 +325,25 @@ namespace tokenDumper {
 		default: {
 			std::stringstream ss;
 			ss << "Unknown(" << static_cast<int>(type) << ")";
+			return ss.str();
+		}
+		}
+	}
+
+	std::string ImpersonationLevelToString(SECURITY_IMPERSONATION_LEVEL level) {
+
+		switch (level) {
+		case SecurityAnonymous:
+			return "SecurityAnonymous";
+		case SecurityIdentification:
+			return "SecurityIdentification";
+		case SecurityImpersonation:
+			return "SecurityImpersonation";
+		case SecurityDelegation:
+			return "SecurityDelegation";
+		default: {
+			std::stringstream ss;
+			ss << "Unknown(" << static_cast<int>(level) << ")";
 			return ss.str();
 		}
 		}

@@ -37,6 +37,9 @@ namespace tokenDumper {
 		case TokenType: {
 			return DumpTokenType(data);
 		}
+		case TokenImpersonationLevel: {
+			return DumpTokenImpersonationLevel(data);
+		}
 		case TokenIntegrityLevel: {
 			return DumpTokenIntegrityLevel(data);
 		}
@@ -264,7 +267,20 @@ namespace tokenDumper {
 		PresentTrait trait;
 		trait.Start("TokenType");
 
-		trait.AddItem("type", TokenTypeToString(*type).c_str(), FALSE, TRUE);
+		trait.AddItem("Type", TokenTypeToString(*type).c_str(), FALSE, TRUE);
+
+		return trait.End();
+	}
+	
+	template<typename PresentTrait>
+	typename PresentTrait::InfoType TokenDumper<PresentTrait>::DumpTokenImpersonationLevel(const BYTE* data) {
+
+		const SECURITY_IMPERSONATION_LEVEL* impersonationLevel = reinterpret_cast<const SECURITY_IMPERSONATION_LEVEL*>(data);
+
+		PresentTrait trait;
+		trait.Start("ImpersonationLevel");
+
+		trait.AddItem("Level", ImpersonationLevelToString(*impersonationLevel).c_str(), FALSE, TRUE);
 
 		return trait.End();
 	}
@@ -288,15 +304,15 @@ namespace tokenDumper {
 			strSid += " (SECURITY_MANDATORY_UNTRUSTED_RID)";
 		else if(SECURITY_MANDATORY_LOW_RID == level)
 			strSid += " (SECURITY_MANDATORY_LOW_RID)";
-		else if(SECURITY_MANDATORY_MEDIUM_RID)
+		else if(SECURITY_MANDATORY_MEDIUM_RID == level)
 			strSid += " (SECURITY_MANDATORY_MEDIUM_RID)";
-		else if(SECURITY_MANDATORY_MEDIUM_PLUS_RID)
+		else if(SECURITY_MANDATORY_MEDIUM_PLUS_RID == level)
 			strSid += " (SECURITY_MANDATORY_MEDIUM_PLUS_RID)";
-		else if(SECURITY_MANDATORY_HIGH_RID)
+		else if(SECURITY_MANDATORY_HIGH_RID == level)
 			strSid += " (SECURITY_MANDATORY_HIGH_RID)";
-		else if(SECURITY_MANDATORY_SYSTEM_RID)
+		else if(SECURITY_MANDATORY_SYSTEM_RID == level)
 			strSid += " (SECURITY_MANDATORY_SYSTEM_RID)";
-		else if(SECURITY_MANDATORY_PROTECTED_PROCESS_RID)
+		else if(SECURITY_MANDATORY_PROTECTED_PROCESS_RID == level)
 			strSid += " (SECURITY_MANDATORY_PROTECTED_PROCESS_RID)";
 
 		trait.AddItem("Sid", strSid.c_str(), FALSE, FALSE);

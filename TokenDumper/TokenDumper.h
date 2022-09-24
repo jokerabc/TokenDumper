@@ -27,7 +27,7 @@ namespace tokenDumper {
 		typename PresentTrait::InfoType DumpTokenDefaultDacl(const BYTE* data);
 		typename PresentTrait::InfoType DumpTokenSource(const BYTE* data);
 		typename PresentTrait::InfoType DumpTokenType(const BYTE* data);
-		//TokenImpersonationLevel,
+		typename PresentTrait::InfoType DumpTokenImpersonationLevel(const BYTE* data);
 		//TokenStatistics,
 		//TokenRestrictedSids,
 		//TokenSessionId,
@@ -84,6 +84,7 @@ namespace tokenDumper {
 	std::string FirstRidToString(DWORD rid);
 	std::string RidForGroupsToString(DWORD rid);
 	std::string TokenTypeToString(TOKEN_TYPE type);
+	std::string ImpersonationLevelToString(SECURITY_IMPERSONATION_LEVEL level);
 };
 
 #include "TokenDumper.hpp"

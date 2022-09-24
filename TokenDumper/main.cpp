@@ -106,9 +106,11 @@ int main(int argc, char** argv)
 			throw tokenDumper::win32_exception(GetLastError(), ss.str());
 		}
 
+		// TokenImpersonationLevel: If the access token is not an impersonation token, the function fails.
+		// This program inspects the main token of programs, so calling GetTokenInformation with TokenImpersonationLevel always returns 'ERROR_INVALID_PARAMETER'
 		std::vector<TOKEN_INFORMATION_CLASS> tokenInfoClasses = { TokenUser, TokenGroups, TokenPrivileges, TokenOwner, 
 			TokenPrimaryGroup, TokenIntegrityLevel, TokenDefaultDacl, /*TokenSource*/
-			TokenType };
+			TokenType, /*TokenImpersonationLevel*/};
 
 		if (RESULT_FORMAT::JSON == format) {
 			tokenDumper::JsonTrait result = Dump<tokenDumper::JsonTrait>(hToken, tokenInfoClasses);
