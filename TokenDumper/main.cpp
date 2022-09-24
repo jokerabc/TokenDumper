@@ -112,7 +112,8 @@ int main(int argc, char** argv)
 			TokenPrimaryGroup, TokenIntegrityLevel, TokenDefaultDacl, /*TokenSource*/
 			TokenType, /*TokenImpersonationLevel*/
 			TokenStatistics,
-			TokenRestrictedSids};
+			TokenRestrictedSids,
+			TokenSessionId};
 
 		if (RESULT_FORMAT::JSON == format) {
 			tokenDumper::JsonTrait result = Dump<tokenDumper::JsonTrait>(hToken, tokenInfoClasses);

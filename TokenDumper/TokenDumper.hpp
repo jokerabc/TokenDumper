@@ -46,6 +46,9 @@ namespace tokenDumper {
 		case TokenRestrictedSids: {
 			return DumpTokenRestrictedSids(data);
 		}
+		case TokenSessionId: {
+			return DumpTokenSessionId(data);
+		}
 		case TokenIntegrityLevel: {
 			return DumpTokenIntegrityLevel(data);
 		}
@@ -349,6 +352,19 @@ namespace tokenDumper {
 
 		return trait.End();
 	
+	}
+
+	template<typename PresentTrait>
+	typename PresentTrait::InfoType TokenDumper<PresentTrait>::DumpTokenSessionId(const BYTE* data) {
+
+		const DWORD* sessionId = reinterpret_cast<const DWORD*>(data);
+
+		PresentTrait trait;
+		trait.Start("SessionId");
+
+		trait.AddItem("Id", std::to_string(*sessionId).c_str(), TRUE, TRUE);
+
+		return trait.End();
 	}
 
 	template<typename PresentTrait>
