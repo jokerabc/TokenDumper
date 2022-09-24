@@ -31,7 +31,7 @@ namespace tokenDumper {
 		typename PresentTrait::InfoType DumpTokenStatistics(const BYTE* data);
 		typename PresentTrait::InfoType DumpTokenRestrictedSids(const BYTE* data);
 		typename PresentTrait::InfoType DumpTokenSessionId(const BYTE* data);
-		//TokenGroupsAndPrivileges,
+		typename PresentTrait::InfoType DumpTokenGroupsAndPrivileges(const BYTE* data);
 		//TokenSessionReference,
 		//TokenSandBoxInert,
 		//TokenAuditPolicy,
@@ -68,9 +68,15 @@ namespace tokenDumper {
 		//TokenIsSandboxed,
 		//TokenOriginatingProcessTrustLevel,
 		//MaxTokenInfoClass  
+
 	private:
+	// Dump the specific structure
+	void DumpSidAndAttributes(const SID_AND_ATTRIBUTES & sidAndAttributes, PresentTrait & trait);
+	void DumpLuidAndAttributes(const LUID_AND_ATTRIBUTES& luid, PresentTrait& trait);
+
 	public:
 	};
+
 
 	// Helper Functions
 	std::string TokenInformationClassToString(TOKEN_INFORMATION_CLASS infoClass);

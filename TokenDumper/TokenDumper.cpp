@@ -31,6 +31,8 @@ namespace tokenDumper {
 			return "TokenRestrictedSids";
 		case TokenSessionId:
 			return "TokenSessionId";
+		case TokenGroupsAndPrivileges:
+			return "TokenGroupsAndPrivileges";
 		default: {
 			std::stringstream ss;
 			ss << "(" << static_cast<int>(infoClass) << ")";

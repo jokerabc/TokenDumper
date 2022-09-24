@@ -49,6 +49,9 @@ namespace tokenDumper {
 		case TokenSessionId: {
 			return DumpTokenSessionId(data);
 		}
+		case TokenGroupsAndPrivileges: {
+			return DumpTokenGroupsAndPrivileges(data);
+		}
 		case TokenIntegrityLevel: {
 			return DumpTokenIntegrityLevel(data);
 		}
@@ -96,22 +99,7 @@ namespace tokenDumper {
 		for (DWORD index = 0; index < groupCount; ++index) {
 
 			SID_AND_ATTRIBUTES groupSidAndAttributes = groups->Groups[index];
-
-			std::string groupName = LookupAccount(groupSidAndAttributes.Sid);
-
-			trait.OpenGroup(groupName.c_str());
-
-			// Get a SID
-			std::string strSid = ConvertSidToString(groupSidAndAttributes.Sid);
-			trait.AddItem("Sid", strSid.c_str(), FALSE, TRUE);
-
-			// Get an attribute
-			std::vector<std::string> strAttributes = GroupAttributesToStringVec(groupSidAndAttributes.Attributes);
-			std::string strDetailedAttributes = AttributesToString( groupSidAndAttributes.Attributes, FALSE, strAttributes);
-
-			trait.AddItem("Attributes", strDetailedAttributes.c_str(), FALSE, FALSE);
-			trait.CloseGroup();
-
+			DumpSidAndAttributes(groupSidAndAttributes, trait);
 		}
 
 		return trait.End();
@@ -128,17 +116,7 @@ namespace tokenDumper {
 		for (DWORD index = 0; index < privileges->PrivilegeCount; ++index) {
 
 			LUID_AND_ATTRIBUTES privilegeAndAttributes = privileges->Privileges[index];
-
-			//Convert privilege to string
-			std::string strPrivilege = ConvertPrivilegeToString(&(privilegeAndAttributes.Luid));
-			trait.OpenGroup(strPrivilege.c_str());
-
-			// Get an attribute
-			std::vector<std::string> strAttributes = PrivilegeAttributesToStringVec(privilegeAndAttributes.Attributes);
-			std::string strDetailedAttributes= AttributesToString(privilegeAndAttributes.Attributes, FALSE, strAttributes);
-
-			trait.AddItem("Attributes", strDetailedAttributes.c_str() , FALSE, FALSE);
-			trait.CloseGroup();
+			DumpLuidAndAttributes(privilegeAndAttributes, trait);
 		}
 
 		return trait.End();
@@ -332,22 +310,7 @@ namespace tokenDumper {
 		for (DWORD index = 0; index < groupCount; ++index) {
 
 			SID_AND_ATTRIBUTES groupSidAndAttributes = groups->Groups[index];
-
-			std::string groupName = LookupAccount(groupSidAndAttributes.Sid);
-
-			trait.OpenGroup(groupName.c_str());
-
-			// Get a SID
-			std::string strSid = ConvertSidToString(groupSidAndAttributes.Sid);
-			trait.AddItem("Sid", strSid.c_str(), FALSE, TRUE);
-
-			// Get an attribute
-			std::vector<std::string> strAttributes = GroupAttributesToStringVec(groupSidAndAttributes.Attributes);
-			std::string strDetailedAttributes = AttributesToString( groupSidAndAttributes.Attributes, FALSE, strAttributes);
-
-			trait.AddItem("Attributes", strDetailedAttributes.c_str(), FALSE, FALSE);
-			trait.CloseGroup();
-
+			DumpSidAndAttributes(groupSidAndAttributes, trait);
 		}
 
 		return trait.End();
@@ -363,6 +326,47 @@ namespace tokenDumper {
 		trait.Start("SessionId");
 
 		trait.AddItem("Id", std::to_string(*sessionId).c_str(), TRUE, TRUE);
+
+		return trait.End();
+	}
+
+	template<typename PresentTrait>
+	typename PresentTrait::InfoType TokenDumper<PresentTrait>::DumpTokenGroupsAndPrivileges(const BYTE* data) {
+
+		const TOKEN_GROUPS_AND_PRIVILEGES * groupsAndPrivilges = reinterpret_cast<const TOKEN_GROUPS_AND_PRIVILEGES*>(data);
+
+		PresentTrait trait;
+		trait.Start("GroupsAndPrivileges");
+
+		trait.OpenGroup("Sid");
+		trait.AddItem("Count", std::to_string(groupsAndPrivilges->SidCount).c_str(), TRUE, TRUE);
+		trait.AddItem("Length", std::to_string(groupsAndPrivilges->SidLength).c_str(), TRUE, TRUE);
+
+		for (DWORD index = 0; index < groupsAndPrivilges->SidCount; ++index) {
+			DumpSidAndAttributes(groupsAndPrivilges->Sids[index], trait);
+		}
+		trait.CloseGroup();
+
+		trait.OpenGroup("RestrictedSid");
+		trait.AddItem("Count", std::to_string(groupsAndPrivilges->RestrictedSidCount).c_str(), TRUE, TRUE);
+		trait.AddItem("Length", std::to_string(groupsAndPrivilges->RestrictedSidLength).c_str(), TRUE, TRUE);
+
+		for (DWORD index = 0; index < groupsAndPrivilges->RestrictedSidCount; ++index) {
+			DumpSidAndAttributes(groupsAndPrivilges->RestrictedSids[index], trait);
+		}
+		trait.CloseGroup();
+
+		trait.OpenGroup("Privilege");
+		trait.AddItem("Count", std::to_string(groupsAndPrivilges->PrivilegeCount).c_str(), TRUE, TRUE);
+		trait.AddItem("Length", std::to_string(groupsAndPrivilges->PrivilegeLength).c_str(), TRUE, TRUE);
+
+		for (DWORD index = 0; index < groupsAndPrivilges->PrivilegeCount; ++index) {
+			DumpLuidAndAttributes(groupsAndPrivilges->Privileges[index], trait);
+		}
+
+		trait.CloseGroup();
+
+        trait.AddItem("AuthenticationId", ConvertLuidToString(&(groupsAndPrivilges->AuthenticationId)).c_str(), FALSE, TRUE);
 
 		return trait.End();
 	}
@@ -405,5 +409,40 @@ namespace tokenDumper {
 		return trait.End();
 	}
 
+	
+	// Dump the specific structure
+	template<typename PresentTrait>
+	void TokenDumper<PresentTrait>::DumpSidAndAttributes(const SID_AND_ATTRIBUTES& sidAndAttributes, PresentTrait& trait) {
+
+        std::string groupName = LookupAccount(sidAndAttributes.Sid);
+
+        trait.OpenGroup(groupName.c_str());
+
+        // Get a SID
+        std::string strSid = ConvertSidToString(sidAndAttributes.Sid);
+        trait.AddItem("Sid", strSid.c_str(), FALSE, TRUE);
+
+        // Get an attribute
+        std::vector<std::string> strAttributes = GroupAttributesToStringVec(sidAndAttributes.Attributes);
+        std::string strDetailedAttributes = AttributesToString( sidAndAttributes.Attributes, FALSE, strAttributes);
+
+        trait.AddItem("Attributes", strDetailedAttributes.c_str(), FALSE, FALSE);
+        trait.CloseGroup();
+	}
+
+	template<typename PresentTrait>
+	void TokenDumper<PresentTrait>::DumpLuidAndAttributes(const LUID_AND_ATTRIBUTES& luidAndAttributes, PresentTrait& trait) {
+
+        //Convert privilege to string
+        std::string strPrivilege = ConvertPrivilegeToString(&(luidAndAttributes.Luid));
+        trait.OpenGroup(strPrivilege.c_str());
+
+        // Get an attribute
+        std::vector<std::string> strAttributes = PrivilegeAttributesToStringVec(luidAndAttributes.Attributes);
+        std::string strDetailedAttributes= AttributesToString(luidAndAttributes.Attributes, FALSE, strAttributes);
+
+        trait.AddItem("Attributes", strDetailedAttributes.c_str() , FALSE, FALSE);
+        trait.CloseGroup();
+	}
 
 };
