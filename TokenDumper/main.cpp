@@ -68,54 +68,69 @@ PresentTrait Dump(HANDLE hToken, const std::vector< TOKEN_INFORMATION_CLASS>& ca
 
 int main(int argc, char** argv)
 {
-
-	DWORD pid{ 0 };
-	RESULT_FORMAT format{ RESULT_FORMAT::JSON };	// Default is JSON
-	// Get a process id from parameters
-	std::string strPid = getCmdOption(argc, argv, "-pid=");
-	if (strPid.empty()) {
-		ShowUsage("-pid argument is mandatory.");
-		return 0;
-	}
-	else {
-		pid = static_cast<DWORD>(std::atoi(strPid.c_str()));
-	}
-
-	std::string strFormat = getCmdOption(argc, argv, "-format=");
-	if (!strFormat.empty()) {
-		if (0 == _stricmp(strFormat.c_str(), "json")) {
-			format = RESULT_FORMAT::JSON;
-		}
-		else if (0 == _stricmp(strFormat.c_str(), "xml")) {
-			format = RESULT_FORMAT::XML;
-		}
-		else {
-			std::stringstream ss;
-			ss << "Invalid format: " << strFormat;
-			ShowUsage(ss.str());
+	try
+	{
+		DWORD pid{ 0 };
+		RESULT_FORMAT format{ RESULT_FORMAT::JSON };	// Default is JSON
+		// Get a process id from parameters
+		std::string strPid = getCmdOption(argc, argv, "-pid=");
+		if (strPid.empty()) {
+			ShowUsage("-pid argument is mandatory.");
 			return 0;
 		}
+		else {
+			pid = static_cast<DWORD>(std::atoi(strPid.c_str()));
+		}
+
+		std::string strFormat = getCmdOption(argc, argv, "-format=");
+		if (!strFormat.empty()) {
+			if (0 == _stricmp(strFormat.c_str(), "json")) {
+				format = RESULT_FORMAT::JSON;
+			}
+			else if (0 == _stricmp(strFormat.c_str(), "xml")) {
+				format = RESULT_FORMAT::XML;
+			}
+			else {
+				std::stringstream ss;
+				ss << "Invalid format: " << strFormat;
+				ShowUsage(ss.str());
+				return 0;
+			}
+		}
+
+
+		HANDLE hToken = nullptr;
+		if (!::OpenProcessToken(tokenDumper::GetProcessHandle(pid), TOKEN_QUERY, &hToken)) {
+			std::stringstream ss;
+			ss << "Failed to open token pid: " << pid;
+			throw tokenDumper::win32_exception(GetLastError(), ss.str());
+		}
+
+		std::vector<TOKEN_INFORMATION_CLASS> tokenInfoClasses = { TokenUser, TokenGroups, TokenPrivileges, TokenOwner, 
+			TokenPrimaryGroup, TokenIntegrityLevel, TokenDefaultDacl, /*TokenSource*/
+			TokenType };
+
+		if (RESULT_FORMAT::JSON == format) {
+			tokenDumper::JsonTrait result = Dump<tokenDumper::JsonTrait>(hToken, tokenInfoClasses);
+			std::cout << result;
+		}
+		else if (RESULT_FORMAT::XML == format) {
+			tokenDumper::XMLTrait result = Dump<tokenDumper::XMLTrait>(hToken, tokenInfoClasses);
+			std::cout << result;
+		}
+
+		return 1;
+	}
+	catch (const std::exception& ex) {
+
+		std::cerr << "exception: " << ex.what();
+	}
+	catch (...) {
+
+		std::cerr << "unknown exception";
 	}
 
-
-	HANDLE hToken = nullptr;
-	if (!::OpenProcessToken(tokenDumper::GetProcessHandle(pid), TOKEN_QUERY, &hToken)) {
-		std::stringstream ss;
-		ss << "Failed to open token pid: " << pid;
-		throw tokenDumper::win32_exception(GetLastError(), ss.str());
-	}
-
-	std::vector<TOKEN_INFORMATION_CLASS> tokenInfoClasses = { TokenUser, TokenGroups, TokenPrivileges, TokenOwner, TokenPrimaryGroup, TokenIntegrityLevel, TokenDefaultDacl };
-
-	if (RESULT_FORMAT::JSON == format) {
-		tokenDumper::JsonTrait result = Dump<tokenDumper::JsonTrait>(hToken, tokenInfoClasses);
-		std::cout << result;
-	}
-	else if (RESULT_FORMAT::XML == format) {
-		tokenDumper::XMLTrait result = Dump<tokenDumper::XMLTrait>(hToken, tokenInfoClasses);
-		std::cout << result;
-	}
-
+	return 0;
 }
 
 std::shared_ptr<BYTE_ARRAY> GetTokenInfo(HANDLE token, TOKEN_INFORMATION_CLASS tokenInfoClass) {
@@ -123,16 +138,22 @@ std::shared_ptr<BYTE_ARRAY> GetTokenInfo(HANDLE token, TOKEN_INFORMATION_CLASS t
 	DWORD tokenInfoLength{ 0 };
 	if (GetTokenInformation(token, tokenInfoClass, nullptr, 0, &tokenInfoLength)) {
 		// Something wrong, this function must return FALSE
-		throw std::runtime_error("GetTokenInformation succeeded even though there is no buffer.");
+		std::stringstream ss;
+		ss << "GetTokenInformation succeeded even though there is no buffer. class: " << tokenDumper::TokenInformationClassToString(tokenInfoClass);
+		throw std::runtime_error(ss.str());
 	}
 	else if( ERROR_INSUFFICIENT_BUFFER != GetLastError() ){
-		throw tokenDumper::win32_exception(GetLastError(), "Failed to call GetTokenInformation in GetTokenInfo.");
+		DWORD err = GetLastError();
+		std::stringstream ss;
+		ss << "Failed to call GetTokenInformation in GetTokenInfo. class: " << tokenDumper::TokenInformationClassToString(tokenInfoClass);
+		throw tokenDumper::win32_exception(err, ss.str());
 	}
 	else {
 		std::shared_ptr<BYTE_ARRAY> retval(new BYTE_ARRAY(new BYTE[tokenInfoLength])); 
 		if (!GetTokenInformation(token, tokenInfoClass, retval->Get(), tokenInfoLength, &tokenInfoLength)) {
-			
-			throw tokenDumper::win32_exception(GetLastError(), "Failed to call(second) GetTokenInformation in GetTokenInfo.");
+			std::stringstream ss;
+			ss << "Failed to call(second) GetTokenInformation in GetTokenInfo. class: " << tokenDumper::TokenInformationClassToString(tokenInfoClass);
+			throw tokenDumper::win32_exception(GetLastError(), ss.str());
 		}
 		else {
 			return retval;

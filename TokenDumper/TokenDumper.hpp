@@ -31,6 +31,12 @@ namespace tokenDumper {
 		case TokenDefaultDacl: {
 			return DumpTokenDefaultDacl(data);
 		}
+		case TokenSource: {
+			return DumpTokenSource(data);
+		}
+		case TokenType: {
+			return DumpTokenType(data);
+		}
 		case TokenIntegrityLevel: {
 			return DumpTokenIntegrityLevel(data);
 		}
@@ -237,6 +243,32 @@ namespace tokenDumper {
 		return trait.End();
 	}
 
+	template<typename PresentTrait>
+	typename PresentTrait::InfoType TokenDumper<PresentTrait>::DumpTokenSource(const BYTE* data) {
+
+		const TOKEN_SOURCE* source = reinterpret_cast<const TOKEN_SOURCE*>(data);
+
+		PresentTrait trait;
+		trait.Start("Source");
+
+		//TODO: Implement
+
+		return trait.End();
+	}
+
+	template<typename PresentTrait>
+	typename PresentTrait::InfoType TokenDumper<PresentTrait>::DumpTokenType(const BYTE* data) {
+
+		const TOKEN_TYPE* type = reinterpret_cast<const TOKEN_TYPE*>(data);
+
+		PresentTrait trait;
+		trait.Start("TokenType");
+
+		trait.AddItem("type", TokenTypeToString(*type).c_str(), FALSE, TRUE);
+
+		return trait.End();
+	}
+	
 	template<typename PresentTrait>
 	typename PresentTrait::InfoType TokenDumper<PresentTrait>::DumpTokenIntegrityLevel(const BYTE* data) {
 

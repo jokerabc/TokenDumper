@@ -17,6 +17,10 @@ namespace tokenDumper {
 			return "TokenPrimaryGroup";
 		case TokenDefaultDacl:
 			return "TokenDefaultDacl";
+		case TokenSource:
+			return "TokenSource";
+		case TokenType:
+			return "TokenType";
 		case TokenIntegrityLevel:
 			return "TokenIntegrityLevel";
 		default: {
@@ -304,6 +308,21 @@ namespace tokenDumper {
 		default: {
 			std::stringstream ss;
 			ss << "Unknown(" << rid << ")";
+			return ss.str();
+		}
+		}
+	}
+
+	std::string TokenTypeToString(TOKEN_TYPE type) {
+
+		switch (type){
+		case TokenPrimary:
+			return "TokenPrimary";
+		case TokenImpersonation:
+			return "TokenImpersonation";
+		default: {
+			std::stringstream ss;
+			ss << "Unknown(" << static_cast<int>(type) << ")";
 			return ss.str();
 		}
 		}

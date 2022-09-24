@@ -22,9 +22,19 @@ namespace tokenDumper{
 		std::string makeMessage(DWORD lastError, const std::string & what_arg)
 		{
 			std::stringstream ss;
-			//TODO: Make a message
-	//		ss << what_arg << " Error: (" << lastError << ")" << Utils::GetErrorTextA(lastError);
-			ss << "Err: (" << lastError << ")";
+			//https://docs.microsoft.com/en-us/windows/win32/debug/retrieving-the-last-error-code
+			LPVOID lpMsgBuf(nullptr);
+
+			FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+				NULL,
+				lastError,
+				MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+				(LPSTR)&lpMsgBuf,
+				0,
+				NULL);
+
+			ss << what_arg << " : (" << lastError << ")" << static_cast<LPCSTR>(lpMsgBuf);
+			LocalFree(lpMsgBuf);
 			return ss.str();
 		}
 	};

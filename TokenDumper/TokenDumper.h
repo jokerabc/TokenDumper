@@ -25,8 +25,8 @@ namespace tokenDumper {
 		typename PresentTrait::InfoType DumpTokenOwner(const BYTE* data);
 		typename PresentTrait::InfoType DumpTokenPrimaryGroup(const BYTE* data);
 		typename PresentTrait::InfoType DumpTokenDefaultDacl(const BYTE* data);
-		//TokenSource,
-		//TokenType,
+		typename PresentTrait::InfoType DumpTokenSource(const BYTE* data);
+		typename PresentTrait::InfoType DumpTokenType(const BYTE* data);
 		//TokenImpersonationLevel,
 		//TokenStatistics,
 		//TokenRestrictedSids,
@@ -83,6 +83,7 @@ namespace tokenDumper {
 	std::vector<std::string> PrivilegeAttributesToStringVec(DWORD attributes);
 	std::string FirstRidToString(DWORD rid);
 	std::string RidForGroupsToString(DWORD rid);
+	std::string TokenTypeToString(TOKEN_TYPE type);
 };
 
 #include "TokenDumper.hpp"
