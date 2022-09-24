@@ -3,6 +3,7 @@
 #include <exception>
 #include <string>
 #include <sstream>
+#include <iomanip>
 #include <sddl.h>
 #include "Auxiliary.h"
 
@@ -25,17 +26,21 @@ namespace tokenDumper {
 		return retval;
 	}
 
-	std::string ConvertLuidToString(const PLUID pLuid) {
+	std::string ConvertPrivilegeToString(const LUID * pLuid) {
+
+		// const PLUID is LUID * const
+		// API argument is non const PLUID, but I guess API might not modify this parameter.
+		PLUID argPluid = const_cast<PLUID>(pLuid);
 
 		std::vector<char> buf(3);
 		DWORD cchName = static_cast<DWORD>(buf.size());
-		if (!LookupPrivilegeNameA(NULL, pLuid, &buf[0], &cchName)) {
+		if (!LookupPrivilegeNameA(NULL, argPluid, &buf[0], &cchName)) {
 
 			DWORD err = GetLastError();
 			if (ERROR_INSUFFICIENT_BUFFER == err) {
 				buf.resize(cchName + static_cast<DWORD>(1));
 				cchName = static_cast<DWORD>(buf.size());
-				if (LookupPrivilegeNameA(NULL, pLuid, &buf[0], &cchName)) {
+				if (LookupPrivilegeNameA(NULL, argPluid, &buf[0], &cchName)) {
 					return &buf[0];
 				}
 				else {
@@ -51,6 +56,14 @@ namespace tokenDumper {
 		}
 	}
 
+	std::string ConvertLuidToString(const LUID* pLuid) {
+
+		std::stringstream ss;
+		ss << std::setfill('0') << std::setw(8) << std::hex << std::uppercase << pLuid->HighPart
+			<< "-" << pLuid->LowPart;
+
+		return ss.str();
+	}
 	std::string LookupAccount(const PSID pSid) {
 
 		size_t initSize = 10;

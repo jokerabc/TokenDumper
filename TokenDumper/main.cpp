@@ -110,7 +110,8 @@ int main(int argc, char** argv)
 		// This program inspects the main token of programs, so calling GetTokenInformation with TokenImpersonationLevel always returns 'ERROR_INVALID_PARAMETER'
 		std::vector<TOKEN_INFORMATION_CLASS> tokenInfoClasses = { TokenUser, TokenGroups, TokenPrivileges, TokenOwner, 
 			TokenPrimaryGroup, TokenIntegrityLevel, TokenDefaultDacl, /*TokenSource*/
-			TokenType, /*TokenImpersonationLevel*/};
+			TokenType, /*TokenImpersonationLevel*/
+			TokenStatistics};
 
 		if (RESULT_FORMAT::JSON == format) {
 			tokenDumper::JsonTrait result = Dump<tokenDumper::JsonTrait>(hToken, tokenInfoClasses);

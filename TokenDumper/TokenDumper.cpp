@@ -25,6 +25,8 @@ namespace tokenDumper {
 			return "TokenImpersonationLevel";
 		case TokenIntegrityLevel:
 			return "TokenIntegrityLevel";
+		case TokenStatistics:
+			return "TokenStatistics";
 		default: {
 			std::stringstream ss;
 			ss << "(" << static_cast<int>(infoClass) << ")";

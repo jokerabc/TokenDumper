@@ -10,7 +10,8 @@ namespace tokenDumper{
 
 	HANDLE GetProcessHandle(DWORD pid);
 	std::string ConvertSidToString(const PSID pSid);
-	std::string ConvertLuidToString(const PLUID pLuid);
+	std::string ConvertPrivilegeToString(const LUID * pLuid);
+	std::string ConvertLuidToString(const LUID * pLuid);
 	std::string LookupAccount(const PSID pSid);
 	std::string TrusteeToString(const PTRUSTEE_A pTrustee);
 

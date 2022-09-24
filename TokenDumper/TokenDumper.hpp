@@ -40,6 +40,9 @@ namespace tokenDumper {
 		case TokenImpersonationLevel: {
 			return DumpTokenImpersonationLevel(data);
 		}
+		case TokenStatistics: {
+			return DumpTokenStatistics(data);
+		}
 		case TokenIntegrityLevel: {
 			return DumpTokenIntegrityLevel(data);
 		}
@@ -121,7 +124,7 @@ namespace tokenDumper {
 			LUID_AND_ATTRIBUTES privilegeAndAttributes = privileges->Privileges[index];
 
 			//Convert privilege to string
-			std::string strPrivilege = ConvertLuidToString(&(privilegeAndAttributes.Luid));
+			std::string strPrivilege = ConvertPrivilegeToString(&(privilegeAndAttributes.Luid));
 			trait.OpenGroup(strPrivilege.c_str());
 
 			// Get an attribute
@@ -281,6 +284,31 @@ namespace tokenDumper {
 		trait.Start("ImpersonationLevel");
 
 		trait.AddItem("Level", ImpersonationLevelToString(*impersonationLevel).c_str(), FALSE, TRUE);
+
+		return trait.End();
+	}
+
+	template<typename PresentTrait>
+	typename PresentTrait::InfoType TokenDumper<PresentTrait>::DumpTokenStatistics(const BYTE* data) {
+
+		const TOKEN_STATISTICS* statistics = reinterpret_cast<const TOKEN_STATISTICS*>(data);
+
+		PresentTrait trait;
+		trait.Start("Statistics");
+
+
+		trait.AddItem("TokenId", ConvertLuidToString(&(statistics->TokenId)).c_str(), FALSE, TRUE);
+		trait.AddItem("AuthenticationId", ConvertLuidToString(&(statistics->AuthenticationId)).c_str(), FALSE, TRUE);
+		// TODO: ExpirationTime
+
+		trait.AddItem("TokenType", TokenTypeToString(statistics->TokenType).c_str(), FALSE, TRUE);
+		// TODO: ImpersonationLevel, This member is valid only if the TokenType is TokenImpersonation.
+
+		trait.AddItem("DynamicCharged", std::to_string(static_cast<int>(statistics->DynamicCharged)).c_str(), TRUE, TRUE);
+		trait.AddItem("DynamicAvailable", std::to_string(static_cast<int>(statistics->DynamicAvailable)).c_str(), TRUE, TRUE);
+		trait.AddItem("GroupCount", std::to_string(static_cast<int>(statistics->GroupCount)).c_str(), TRUE, TRUE);
+		trait.AddItem("PrivilegeCount", std::to_string(static_cast<int>(statistics->PrivilegeCount)).c_str(), TRUE, TRUE);
+		trait.AddItem("ModifiedId", ConvertLuidToString(&(statistics->ModifiedId)).c_str(), FALSE, TRUE);
 
 		return trait.End();
 	}
