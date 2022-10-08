@@ -37,6 +37,8 @@ namespace tokenDumper {
 			return "TokenOrigin";
 		case TokenElevationType:
 			return "TokenElevationType";
+		case TokenLinkedToken:
+			return "TokenLinkedToken";
 		case TokenGroupsAndPrivileges:
 			return "TokenGroupsAndPrivileges";
 		default: {

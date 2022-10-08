@@ -17,8 +17,10 @@ namespace tokenDumper{
 
 	class win32_exception : public std::runtime_error {
 	public:
-		win32_exception(DWORD lastError, const std::string& msg) : runtime_error(makeMessage(lastError, msg)) {
+		win32_exception(DWORD lastError, const std::string& msg) : m_lastError(lastError), runtime_error(makeMessage(lastError, msg)) {
 		}
+
+		DWORD GetLastError() const { return m_lastError; }
 	private:
 		std::string makeMessage(DWORD lastError, const std::string & what_arg)
 		{
@@ -38,6 +40,8 @@ namespace tokenDumper{
 			LocalFree(lpMsgBuf);
 			return ss.str();
 		}
+	private:
+		DWORD m_lastError;
 	};
 
 	template <typename T>

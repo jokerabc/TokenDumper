@@ -61,19 +61,38 @@ namespace tokenDumper {
 		case TokenElevationType: {
 			return DumpTokenElevationType(data);
 		}
+		case TokenLinkedToken: {
+			return DumpTokenLinkedToken(data);
+		}
 		case TokenIntegrityLevel: {
 			return DumpTokenIntegrityLevel(data);
 		}
 			default:{
 
 				std::stringstream ss;
-				ss << TokenInformationClassToString(infoClass) << " is not supported.";
+				ss << TokenInformationClassToString(infoClass) << " is not supported in Dump.";
 				throw std::runtime_error(ss.str());
 			}
 		
 		}
 
 
+	}
+
+	template<typename PresentTrait>
+	typename PresentTrait::InfoType TokenDumper<PresentTrait>::ReportState(DWORD lastError, TOKEN_INFORMATION_CLASS infoClass) {
+
+		switch (infoClass) {
+		case TokenLinkedToken: {
+			return ReportStateOfTokenLinkedToken(lastError);
+		}
+            default: {
+                std::stringstream ss;
+                ss << TokenInformationClassToString(infoClass) << " is not supported in ReportState.";
+                throw std::runtime_error(ss.str());
+
+            }
+		}
 	}
 
 	template<typename PresentTrait>
@@ -433,6 +452,23 @@ namespace tokenDumper {
 	}
 
 	template<typename PresentTrait>
+	typename PresentTrait::InfoType TokenDumper<PresentTrait>::DumpTokenLinkedToken(const BYTE* data) {
+
+		const TOKEN_LINKED_TOKEN* linkedToken = reinterpret_cast<const TOKEN_LINKED_TOKEN*>(data);
+
+		PresentTrait trait;
+		trait.Start("LinkedToken");
+
+		std::stringstream ss;
+		ss << std::hex << linkedToken->LinkedToken;
+		trait.AddItem("Handle", ss.str().c_str(), FALSE, TRUE);
+
+		//TODO: Show more information of the linked token.
+
+		return trait.End();
+	}
+
+	template<typename PresentTrait>
 	typename PresentTrait::InfoType TokenDumper<PresentTrait>::DumpTokenIntegrityLevel(const BYTE* data) {
 
 		const TOKEN_MANDATORY_LABEL* mandatoryLevel = reinterpret_cast<const TOKEN_MANDATORY_LABEL*>(data);
@@ -506,4 +542,20 @@ namespace tokenDumper {
         trait.CloseGroup();
 	}
 
+
+	// Report State
+	template<typename PresentTrait>
+	typename PresentTrait::InfoType TokenDumper<PresentTrait>::ReportStateOfTokenLinkedToken(DWORD lastError) {
+
+		PresentTrait trait;
+		trait.Start("LinkedToken");
+
+		std::string errorStr;
+		if (ERROR_NO_SUCH_LOGON_SESSION == lastError)
+			errorStr = "LinkedToken is not exist";
+
+		trait.AddItem("Error", errorStr.c_str(), FALSE, TRUE);
+
+		return trait.End();
+	}
 };

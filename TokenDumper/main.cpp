@@ -57,7 +57,25 @@ PresentTrait Dump(HANDLE hToken, const std::vector< TOKEN_INFORMATION_CLASS>& ca
 
 	for (auto category : categories) {
 
-		std::shared_ptr<BYTE_ARRAY> tokenInfo = GetTokenInfo(hToken, category);
+		std::shared_ptr<BYTE_ARRAY> tokenInfo;
+		try	{
+			tokenInfo = GetTokenInfo(hToken, category);
+		}
+		catch (const tokenDumper::win32_exception& ex) {
+			
+			if ( (TokenLinkedToken == category) && (ERROR_NO_SUCH_LOGON_SESSION == ex.GetLastError()) ) {
+				// There is no linked token(e.g. UAC Off)
+				tokenDumper::TokenDumper<PresentTrait> tokenDumper;
+				retval.AddSubTrait(tokenDumper::TokenInformationClassToString(category).c_str(), tokenDumper.ReportState(ex.GetLastError(), category));
+
+				return std::move(retval);
+			}
+			else {
+				throw;
+			}
+
+		}
+		tokenInfo = GetTokenInfo(hToken, category);
 		tokenDumper::TokenDumper<PresentTrait> tokenDumper;
 		retval.AddSubTrait(tokenDumper::TokenInformationClassToString(category).c_str(), tokenDumper.Dump(tokenInfo->Get(), category));
 	}
@@ -117,7 +135,8 @@ int main(int argc, char** argv)
 			TokenGroupsAndPrivileges,
 			TokenSandBoxInert,
 			TokenOrigin,
-			TokenElevationType};
+			TokenElevationType,
+			TokenLinkedToken};
 
 		if (RESULT_FORMAT::JSON == format) {
 			tokenDumper::JsonTrait result = Dump<tokenDumper::JsonTrait>(hToken, tokenInfoClasses);
@@ -151,7 +170,8 @@ std::shared_ptr<BYTE_ARRAY> GetTokenInfo(HANDLE token, TOKEN_INFORMATION_CLASS t
 		ss << "GetTokenInformation succeeded even though there is no buffer. class: " << tokenDumper::TokenInformationClassToString(tokenInfoClass);
 		throw std::runtime_error(ss.str());
 	}
-	else if( ERROR_INSUFFICIENT_BUFFER != GetLastError() ){
+	else if( (ERROR_INSUFFICIENT_BUFFER != GetLastError()) &&
+			(ERROR_BAD_LENGTH != GetLastError()) ){		// TokenLinkedToken causes ERROR_BAD_LENGTH as last error.
 		DWORD err = GetLastError();
 		std::stringstream ss;
 		ss << "Failed to call GetTokenInformation in GetTokenInfo. class: " << tokenDumper::TokenInformationClassToString(tokenInfoClass);

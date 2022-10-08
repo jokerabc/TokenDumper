@@ -14,8 +14,10 @@ namespace tokenDumper {
 		explicit TokenDumper() {
 		}
 
+		// Return parsed(xml or json) token information of the specific TOKEN_INFORMATION_CLASS
 		typename PresentTrait::InfoType Dump(const BYTE* data, TOKEN_INFORMATION_CLASS infoClass);
-
+		// Some of the TOKEN_INFORMATION_CLASS can not be aquired in certain conditions.
+		typename PresentTrait::InfoType ReportState(DWORD lastError, TOKEN_INFORMATION_CLASS infoClass);
 
 	private:
 		// Dump each class
@@ -37,7 +39,7 @@ namespace tokenDumper {
 		//TokenAuditPolicy,			//Reserved
 		typename PresentTrait::InfoType DumpTokenOrigin(const BYTE* data);
 		typename PresentTrait::InfoType DumpTokenElevationType(const BYTE* data);
-		//TokenLinkedToken,
+		typename PresentTrait::InfoType DumpTokenLinkedToken(const BYTE* data);
 		//TokenElevation,
 		//TokenHasRestrictions,
 		//TokenAccessInformation,
@@ -68,6 +70,10 @@ namespace tokenDumper {
 		//TokenIsSandboxed,
 		//TokenOriginatingProcessTrustLevel,
 		//MaxTokenInfoClass  
+
+
+		// ReportState
+		typename PresentTrait::InfoType ReportStateOfTokenLinkedToken(DWORD lastError);
 
 	private:
 	// Dump the specific structure
