@@ -64,6 +64,9 @@ namespace tokenDumper {
 		case TokenLinkedToken: {
 			return DumpTokenLinkedToken(data);
 		}
+		case TokenElevation: {
+			return DumpTokenElevation(data);
+		}
 		case TokenIntegrityLevel: {
 			return DumpTokenIntegrityLevel(data);
 		}
@@ -465,6 +468,18 @@ namespace tokenDumper {
 
 		//TODO: Show more information of the linked token.
 
+		return trait.End();
+	}
+
+	template<typename PresentTrait>
+	typename PresentTrait::InfoType TokenDumper<PresentTrait>::DumpTokenElevation(const BYTE* data) {
+
+		const TOKEN_ELEVATION* elevation = reinterpret_cast<const TOKEN_ELEVATION*>(data);
+
+		PresentTrait trait;
+		trait.Start("Elevation");
+
+		trait.AddItem("IsElevated", ((0 == elevation->TokenIsElevated) ? "false" : "true"), FALSE, TRUE);
 		return trait.End();
 	}
 

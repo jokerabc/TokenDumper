@@ -136,7 +136,8 @@ int main(int argc, char** argv)
 			TokenSandBoxInert,
 			TokenOrigin,
 			TokenElevationType,
-			TokenLinkedToken};
+			TokenLinkedToken,
+			TokenElevation};
 
 		if (RESULT_FORMAT::JSON == format) {
 			tokenDumper::JsonTrait result = Dump<tokenDumper::JsonTrait>(hToken, tokenInfoClasses);

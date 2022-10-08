@@ -31,6 +31,8 @@ namespace tokenDumper {
 			return "TokenRestrictedSids";
 		case TokenSessionId:
 			return "TokenSessionId";
+		case TokenGroupsAndPrivileges:
+			return "TokenGroupsAndPrivileges";
 		case TokenSandBoxInert:
 			return "TokenSandBoxInert";
 		case TokenOrigin:
@@ -39,8 +41,8 @@ namespace tokenDumper {
 			return "TokenElevationType";
 		case TokenLinkedToken:
 			return "TokenLinkedToken";
-		case TokenGroupsAndPrivileges:
-			return "TokenGroupsAndPrivileges";
+		case TokenElevation:
+			return "TokenElevation";
 		default: {
 			std::stringstream ss;
 			ss << "(" << static_cast<int>(infoClass) << ")";
