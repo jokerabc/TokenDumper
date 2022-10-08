@@ -67,6 +67,9 @@ namespace tokenDumper {
 		case TokenElevation: {
 			return DumpTokenElevation(data);
 		}
+		case TokenHasRestrictions: {
+			return DumpTokenHasRestrictions(data);
+		}
 		case TokenIntegrityLevel: {
 			return DumpTokenIntegrityLevel(data);
 		}
@@ -480,6 +483,18 @@ namespace tokenDumper {
 		trait.Start("Elevation");
 
 		trait.AddItem("IsElevated", ((0 == elevation->TokenIsElevated) ? "false" : "true"), FALSE, TRUE);
+		return trait.End();
+	}
+
+	template<typename PresentTrait>
+	typename PresentTrait::InfoType TokenDumper<PresentTrait>::DumpTokenHasRestrictions(const BYTE* data) {
+
+		const DWORD* hasRestrictions = reinterpret_cast<const DWORD*>(data);
+
+		PresentTrait trait;
+		trait.Start("HasRestriction");
+
+		trait.AddItem("IsFiltered", ((0 == *hasRestrictions) ? "false" : "true"), FALSE, TRUE);
 		return trait.End();
 	}
 

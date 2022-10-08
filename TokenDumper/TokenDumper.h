@@ -41,7 +41,7 @@ namespace tokenDumper {
 		typename PresentTrait::InfoType DumpTokenElevationType(const BYTE* data);
 		typename PresentTrait::InfoType DumpTokenLinkedToken(const BYTE* data);
 		typename PresentTrait::InfoType DumpTokenElevation(const BYTE* data);
-		//TokenHasRestrictions,
+		typename PresentTrait::InfoType DumpTokenHasRestrictions(const BYTE* data);
 		//TokenAccessInformation,
 		//TokenVirtualizationAllowed,
 		//TokenVirtualizationEnabled,

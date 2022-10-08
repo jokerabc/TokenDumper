@@ -43,6 +43,8 @@ namespace tokenDumper {
 			return "TokenLinkedToken";
 		case TokenElevation:
 			return "TokenElevation";
+		case TokenHasRestrictions:
+			return "TokenHasRestrictions";
 		default: {
 			std::stringstream ss;
 			ss << "(" << static_cast<int>(infoClass) << ")";

@@ -67,8 +67,7 @@ PresentTrait Dump(HANDLE hToken, const std::vector< TOKEN_INFORMATION_CLASS>& ca
 				// There is no linked token(e.g. UAC Off)
 				tokenDumper::TokenDumper<PresentTrait> tokenDumper;
 				retval.AddSubTrait(tokenDumper::TokenInformationClassToString(category).c_str(), tokenDumper.ReportState(ex.GetLastError(), category));
-
-				return std::move(retval);
+				continue;
 			}
 			else {
 				throw;
@@ -137,7 +136,8 @@ int main(int argc, char** argv)
 			TokenOrigin,
 			TokenElevationType,
 			TokenLinkedToken,
-			TokenElevation};
+			TokenElevation,
+			TokenHasRestrictions};
 
 		if (RESULT_FORMAT::JSON == format) {
 			tokenDumper::JsonTrait result = Dump<tokenDumper::JsonTrait>(hToken, tokenInfoClasses);
